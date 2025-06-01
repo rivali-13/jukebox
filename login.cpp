@@ -57,7 +57,7 @@ bool Login::checkCredentials(const QString& username, const QString& password)
         QString line = file.readLine().trimmed();
         QStringList fields = line.split(",");
 
-        if (fields.size() >= 6 &&  // Check for all required fields
+        if (fields.size() >= 5 &&  // Check for all required fields
             fields[0] == username &&
             fields[2] == hashedPassword) {
 
@@ -65,8 +65,7 @@ bool Login::checkCredentials(const QString& username, const QString& password)
             currentUser.set_name(fields[1]);
             currentUser.set_password(fields[2]);
             currentUser.set_email(fields[3]);
-            currentUser.set_age(fields[4].toInt());
-            currentUser.set_male(fields[5] == "1" ? true : false);
+            currentUser.set_male(fields[4] == "1" ? true : false);
 
             file.close();
             return true;  // Found matching user

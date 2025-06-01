@@ -23,15 +23,7 @@ void Sign_in::on_buttonBox_accepted()
     if (ui->lineEdit->text().isEmpty()||
         ui->lineEdit_2->text().isEmpty()||
         ui->lineEdit_3->text().isEmpty()||
-        ui->lineEdit_4->text().isEmpty()||
-        ui->lineEdit_5->text().isEmpty()){
-        QMessageBox::critical(this, "Error", "Invalid value");
-        return;
-    }
-    bool ok;
-    int age = ui->lineEdit_5->text().toInt(&ok);
-    
-    if (!ok) {
+        ui->lineEdit_4->text().isEmpty()){
         QMessageBox::critical(this, "Error", "Invalid value");
         return;
     }
@@ -43,7 +35,6 @@ void Sign_in::on_buttonBox_accepted()
     std::string hashedPassword = hashPassword(rawPassword);
     u->set_password(QString::fromStdString(hashedPassword));
     u->set_email(ui->lineEdit_4->text());
-    u->set_age(age);
     u->set_male(ui->comboBox->currentText() == "male");  // or whatever your exact combo box items are
     if (saveUserToFile(*u)) {
         QMessageBox::information(this, "Success", "User registered successfully!");
@@ -63,7 +54,6 @@ bool Sign_in::saveUserToFile(User& user) {
         << user.get_name() << ","
         << user.get_password() << ","
         << user.get_email() << ","
-        << user.get_age() << "," 
         << user.get_male() << "\n";
 
     file.close();

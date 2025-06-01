@@ -8,19 +8,13 @@ User::User(QWidget *parent)
     ui->setupUi(this);
 }
 
-User::User(int _age, bool _male, QString _name, QString _user_name, QString _email, QString _password, QWidget *parent)
+User::User(bool _male, QString _name, QString _user_name, QString _email, QString _password, QWidget *parent)
 {
     name = _name;
     user_name = _user_name;
     password = _password;
     email = _email;
-    age = _age;
     male = _male;
-}
-
-int User::get_age()
-{
-    return age;
 }
 
 bool User::get_male()
@@ -66,11 +60,6 @@ void User::set_email(QString _email)
 void User::set_password(QString _password)
 {
     password = _password;
-}
-
-void User::set_age(int _age)
-{
-    age = _age;
 }
 
 void User::set_male(bool _male)
