@@ -21,7 +21,6 @@ void Panel_User::set_curuser(User& _user)
     currentUser.set_name(_user.get_name());
     currentUser.set_password(_user.get_password());
     currentUser.set_email(_user.get_email());
-    currentUser.set_age(_user.get_age());
     currentUser.set_male(_user.get_male());
 }
 

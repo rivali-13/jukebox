@@ -27,15 +27,11 @@ void Info::set_info(User& u)
     emailItem->setTextAlignment(Qt::AlignCenter);
     ui->listWidget_3->addItem(emailItem);
 
-    QListWidgetItem* ageItem = new QListWidgetItem(QString::number(u.get_age()));
-    ageItem->setTextAlignment(Qt::AlignCenter);
-    ui->listWidget_4->addItem(ageItem);
-
     QListWidgetItem* genderItem;
     if (u.get_male()) genderItem = new QListWidgetItem("male");
     else genderItem = new QListWidgetItem("female");
     genderItem->setTextAlignment(Qt::AlignCenter);
-    ui->listWidget_5->addItem(genderItem);
+    ui->listWidget_4->addItem(genderItem);
 }
 
 void Info::on_pushButton_clicked()
