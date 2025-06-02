@@ -13,8 +13,7 @@ class User : public QWidget
 
 public:
     explicit User(QWidget *parent = nullptr);
-    User(bool _male, QString _name, QString _user_name, QString _email, QString _password, QWidget *parent = nullptr);
-    bool get_male();
+    User(QString _name, QString _user_name, QString _email, QString _password, QWidget *parent = nullptr);
     QString get_name();
     QString get_user_name();
     QString get_email();
@@ -23,7 +22,6 @@ public:
     void set_user_name(QString _user_name);
     void set_email(QString _email);
     void set_password(QString _password);
-    void set_male(bool _male);
     ~User();
 
 private:
@@ -32,7 +30,6 @@ private:
     QString user_name;
     QString email;
     QString password;
-    bool male;
 };
 
 #endif // USER_H
