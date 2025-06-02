@@ -1,6 +1,6 @@
 #include "forget.h"
 #include "ui_forget.h"
-#include <QDebug>
+//#include <QDebug>
 
 Forget::Forget(QWidget *parent)
     : QDialog(parent)
@@ -52,7 +52,7 @@ bool Forget::checkCredentials(const QString &user_name, const QString &email, co
         QString line = in.readLine().trimmed();
         QStringList fields = line.split(",");
         for (QString &field : fields) field = field.trimmed();
-        qDebug() << "Comparing:" << fields[0] << user_name << fields[3] << email;
+        //qDebug() << "Comparing:" << fields[0] << user_name << fields[3] << email;
         if (fields.size() >= 4 &&
             fields[0] == user_name &&
             fields[3] == email) {
