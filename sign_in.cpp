@@ -35,7 +35,6 @@ void Sign_in::on_buttonBox_accepted()
     std::string hashedPassword = hashPassword(rawPassword);
     u->set_password(QString::fromStdString(hashedPassword));
     u->set_email(ui->lineEdit_4->text());
-    u->set_male(ui->comboBox->currentText() == "male");  // or whatever your exact combo box items are
     if (saveUserToFile(*u)) {
         QMessageBox::information(this, "Success", "User registered successfully!");
         this->close();
@@ -53,8 +52,7 @@ bool Sign_in::saveUserToFile(User& user) {
     out << user.get_user_name() << ","
         << user.get_name() << ","
         << user.get_password() << ","
-        << user.get_email() << ","
-        << user.get_male() << "\n";
+        << user.get_email() << "\n";
 
     file.close();
     return true;
