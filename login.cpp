@@ -4,6 +4,7 @@
 #include <functional>
 #include <QFile>
 #include "panel_user.h"
+#include "forget.h"
 
 Login::Login(QWidget *parent)
     : QDialog(parent)
@@ -79,3 +80,10 @@ User& Login::getCurrentUser()
 {
     return currentUser;
 }
+
+void Login::on_pushButton_clicked()
+{
+    Forget* f = new Forget (this);
+    f->show();
+}
+
