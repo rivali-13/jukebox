@@ -3,6 +3,7 @@ QT += core gui widgets
 CONFIG += c++17
 
 SOURCES += \
+    forget.cpp \
     main.cpp \
     menu.cpp \
     login.cpp \
@@ -12,6 +13,7 @@ SOURCES += \
     info.cpp
 
 HEADERS += \
+    forget.h \
     menu.h \
     login.h \
     sign_in.h \
@@ -20,6 +22,7 @@ HEADERS += \
     info.h
 
 FORMS += \
+    forget.ui \
     menu.ui \
     login.ui \
     sign_in.ui \

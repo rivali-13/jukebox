@@ -16,9 +16,11 @@ public:
     explicit Login(QWidget *parent = nullptr);
     ~Login();
     bool checkCredentials(const QString &username, const QString &password);
-    User& getCurrentUser();
+    virtual User& getCurrentUser();
 private slots:
     void on_buttonBox_accepted();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::Login *ui;
