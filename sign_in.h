@@ -23,6 +23,7 @@ private:
     bool saveUserToFile(User& user);
     std::string hashPassword(QString& password);
 
+    QString twoWayEncrypt(const QString &input);
 };
 
 #endif // SIGN_IN_H

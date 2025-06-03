@@ -25,6 +25,7 @@ private:
     Ui::Forget *ui;
     bool checkCredentials(const QString &user_name, const QString &email, const QString &pass);
     std::string hashPassword(QString &password);
+    QString twoWayEncrypt(const QString &input);
 };
 
 #endif // FORGET_H

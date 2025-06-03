@@ -20,6 +20,11 @@ Login::~Login()
     delete ui;
 }
 
+QString Login::twoWayEncrypt(const QString& input) {
+    return QString(input.toUtf8().toBase64());
+}
+
+
 void Login::on_buttonBox_accepted()
 {
     QString user_name = ui->lineEdit->text();
@@ -54,12 +59,15 @@ bool Login::checkCredentials(const QString& username, const QString& password)
     std::string pwd = password.toStdString();
     QString hashedPassword = QString::fromStdString(std::to_string(hasher(pwd)));
 
+    // Encode the username for comparison (to match registration)
+    QString encodedUsername = twoWayEncrypt(username);
+
     while (!file.atEnd()) {
         QString line = file.readLine().trimmed();
         QStringList fields = line.split(",");
 
-        if (fields.size() >= 4 &&  // Check for all required fields
-            fields[0] == username &&
+        if (fields.size() >= 4 &&
+            fields[0] == encodedUsername &&
             fields[2] == hashedPassword) {
 
             currentUser.set_user_name(fields[0]);
@@ -68,12 +76,12 @@ bool Login::checkCredentials(const QString& username, const QString& password)
             currentUser.set_email(fields[3]);
 
             file.close();
-            return true;  // Found matching user
+            return true;
         }
     }
 
     file.close();
-    return false;  // No matching user found
+    return false;
 }
 
 User& Login::getCurrentUser()

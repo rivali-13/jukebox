@@ -21,6 +21,7 @@ private slots:
 
 private:
     Ui::Info *ui;
+    QString twoWayDecrypt(const QString &input);
 };
 
 #endif // INFO_H
