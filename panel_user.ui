@@ -14,17 +14,24 @@
    <string>Panel</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="2" column="0">
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="text">
+      <string>Exit</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <widget class="QPushButton" name="pushButton">
      <property name="text">
       <string>user info</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QPushButton" name="pushButton_2">
+   <item row="0" column="0">
+    <widget class="QPushButton" name="pushButton_3">
      <property name="text">
-      <string>Exit</string>
+      <string>MusicPlayer</string>
      </property>
     </widget>
    </item>

@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets multimedia
 
 CONFIG += c++17
 
@@ -10,7 +10,9 @@ SOURCES += \
     sign_in.cpp \
     user.cpp \
     panel_user.cpp \
-    info.cpp
+    info.cpp \
+    home.cpp \
+    style_playlistitem.cpp
 
 HEADERS += \
     forget.h \
@@ -19,7 +21,9 @@ HEADERS += \
     sign_in.h \
     user.h \
     panel_user.h \
-    info.h
+    info.h \
+    home.h \
+    style_playlistitem.h
 
 FORMS += \
     forget.ui \
@@ -28,4 +32,8 @@ FORMS += \
     sign_in.ui \
     user.ui \
     panel_user.ui \
-    info.ui
+    info.ui \
+    home.ui
+
+RESOURCES += \
+        resources.qrc

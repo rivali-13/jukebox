@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/JukeBox">
+        <file>Icon/add.png</file>
+        <file>Icon/audio.png</file>
+        <file>Icon/cancel.png</file>
+        <file>Icon/cover.png</file>
+    </qresource>
+</RCC>

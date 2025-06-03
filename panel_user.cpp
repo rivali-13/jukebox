@@ -36,3 +36,9 @@ void Panel_User::on_pushButton_clicked()
     i->show();
 }
 
+void Panel_User::on_pushButton_3_clicked() //***
+{
+    home * pagemusic = new home();
+    this->close();
+    pagemusic->show();
+}
