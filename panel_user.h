@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "user.h"
 #include "info.h"
+#include "home.h" //***
 
 namespace Ui {
 class Panel_User;
@@ -21,6 +22,8 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_pushButton_clicked();
+
+    void on_pushButton_3_clicked(); //***
 
 private:
     Ui::Panel_User *ui;
