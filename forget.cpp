@@ -14,6 +14,10 @@ Forget::~Forget()
     delete ui;
 }
 
+QString Forget::twoWayEncrypt(const QString& input) {
+    return QString(input.toUtf8().toBase64());
+}
+
 void Forget::on_buttonBox_accepted()
 {
     QString user_name = ui->lineEdit->text();
@@ -21,7 +25,12 @@ void Forget::on_buttonBox_accepted()
     QString rawPassword = ui->lineEdit_3->text();
     std::string hashedPasswordStd = hashPassword(rawPassword);
     QString hashedPassword = QString::fromStdString(hashedPasswordStd);
-    if (checkCredentials(user_name, email, hashedPassword)){
+
+    QString encodedUserName = twoWayEncrypt(user_name);
+    QString encodedEmail = twoWayEncrypt(email);
+
+
+    if (checkCredentials(encodedUserName, encodedEmail, hashedPassword)){
         QMessageBox::information(this, "Success", "password changed successfully!");
     } else {
         QMessageBox::critical(this, "Error", "Username and email do not match any account");

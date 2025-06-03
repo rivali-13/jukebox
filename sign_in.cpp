@@ -18,6 +18,11 @@ Sign_in::~Sign_in()
     delete ui;
 }
 
+QString Sign_in::twoWayEncrypt(const QString& input) {
+    return QString(input.toUtf8().toBase64());
+}
+
+
 void Sign_in::on_buttonBox_accepted()
 {
     if (ui->lineEdit->text().isEmpty()||
@@ -27,19 +32,20 @@ void Sign_in::on_buttonBox_accepted()
         QMessageBox::critical(this, "Error", "Invalid value");
         return;
     }
-    
+
     std::unique_ptr<User> u = std::make_unique<User>();
-    u->set_user_name(ui->lineEdit->text());
-    u->set_name(ui->lineEdit_2->text());
+    u->set_user_name(twoWayEncrypt(ui->lineEdit->text()));
+    u->set_name(twoWayEncrypt(ui->lineEdit_2->text()));
     QString rawPassword = ui->lineEdit_3->text();
     std::string hashedPassword = hashPassword(rawPassword);
     u->set_password(QString::fromStdString(hashedPassword));
-    u->set_email(ui->lineEdit_4->text());
+    u->set_email(twoWayEncrypt(ui->lineEdit_4->text()));
     if (saveUserToFile(*u)) {
         QMessageBox::information(this, "Success", "User registered successfully!");
         this->close();
     }
 }
+
 
 bool Sign_in::saveUserToFile(User& user) {
     QFile file("users.txt");

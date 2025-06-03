@@ -13,17 +13,21 @@ Info::~Info()
     delete ui;
 }
 
+QString Info::twoWayDecrypt(const QString& input) {
+    return QString(QByteArray::fromBase64(input.toUtf8()));
+}
+
 void Info::set_info(User& u)
 {
-    QListWidgetItem* nameItem = new QListWidgetItem(u.get_name());
+    QListWidgetItem* nameItem = new QListWidgetItem(twoWayDecrypt(u.get_name()));
     nameItem->setTextAlignment(Qt::AlignCenter);
     ui->listWidget->addItem(nameItem);
 
-    QListWidgetItem* userNameItem = new QListWidgetItem(u.get_user_name());
+    QListWidgetItem* userNameItem = new QListWidgetItem(twoWayDecrypt(u.get_user_name()));
     userNameItem->setTextAlignment(Qt::AlignCenter);
     ui->listWidget_2->addItem(userNameItem);
 
-    QListWidgetItem* emailItem = new QListWidgetItem(u.get_email());
+    QListWidgetItem* emailItem = new QListWidgetItem(twoWayDecrypt(u.get_email()));
     emailItem->setTextAlignment(Qt::AlignCenter);
     ui->listWidget_3->addItem(emailItem);
 }

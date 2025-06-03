@@ -25,6 +25,7 @@ private slots:
 private:
     Ui::Login *ui;
     User currentUser;
+    QString twoWayEncrypt(const QString &input);
 };
 
 #endif // LOGIN_H
