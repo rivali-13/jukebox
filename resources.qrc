@@ -4,5 +4,29 @@
         <file>Icon/audio.png</file>
         <file>Icon/cancel.png</file>
         <file>Icon/cover.png</file>
+        <file>Icon/1.png</file>
+        <file>Icon/2.png</file>
+        <file>Icon/3.png</file>
+        <file>Icon/4.png</file>
+        <file>Icon/5.png</file>
+        <file>Icon/6.png</file>
+        <file>Icon/7.png</file>
+        <file>Icon/8.png</file>
+        <file>Icon/9.png</file>
+        <file>Icon/10.png</file>
+        <file>Icon/11.png</file>
+        <file>Icon/12.png</file>
+        <file>Icon/13.png</file>
+        <file>Icon/14.png</file>
+        <file>Icon/15.png</file>
+        <file>Icon/16.png</file>
+        <file>Icon/17.png</file>
+        <file>Icon/18.png</file>
+        <file>Icon/19.png</file>
+        <file>Icon/20.png</file>
+        <file>Icon/21.png</file>
+        <file>Icon/22.png</file>
+        <file>Icon/23.png</file>
+        <file>Icon/24.png</file>
     </qresource>
 </RCC>
