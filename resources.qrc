@@ -28,5 +28,7 @@
         <file>Icon/22.png</file>
         <file>Icon/23.png</file>
         <file>Icon/24.png</file>
+	<file>Icon/left.png</file>
+	<file>Icon/right.png</file>
     </qresource>
 </RCC>
