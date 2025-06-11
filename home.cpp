@@ -5,22 +5,13 @@ home::home(QWidget *parent)
     , ui(new Ui::home )
 {
     ui->setupUi(this);
-    ui->centralwidget->setStyleSheet("#centralwidget { background-color: #201f1d; border-radius: 20px; border: 1px solid #0632a2 } ");
-    ui->LeftPageMusic->setStyleSheet("#LeftPageMusic {background-color: #232220; border-top-left-radius: 20px }");
 
 // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
     ui->cover->setPixmap(pix);
     ui->cover1->setPixmap(pix);
-    ui->cover->setStyleSheet("#cover { border:1px solid #c9cfdd} " );
 //********
     LoadMusicFiles();
-
-    QPixmap sound(":JukeBox/Icon/audio.png");
-    ui->sound->setPixmap(sound);
-
-    QIcon addMusic(":JukeBox/Icon/add.png");
-    ui->addMusic->setIcon(addMusic);
 
 //*****************************     music PlayList For Test **************************
     ui->playlist->setItemDelegate(new style_playlistitem(ui->playlist));
