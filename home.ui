@@ -26,6 +26,13 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
+   <property name="styleSheet">
+    <string notr="true">#centralwidget {
+	border-radius: 20px; 
+	border: 1px solid #0632a2; 
+	background-color: #201f1d;
+}</string>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="leftMargin">
      <number>1</number>
@@ -90,6 +97,12 @@
                <height>16777215</height>
               </size>
              </property>
+             <property name="styleSheet">
+              <string notr="true">#LeftPageMusic {
+	background-color: #232220;
+	border-top-left-radius: 20px 
+}</string>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <property name="spacing">
                <number>20</number>
@@ -130,6 +143,11 @@
                     <width>200</width>
                     <height>200</height>
                    </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">#cover {
+	border:1px solid #c9cfdd;
+}</string>
                   </property>
                   <property name="text">
                    <string>Picture</string>
@@ -631,15 +649,14 @@
                 </item>
                 <item>
                  <widget class="QLabel" name="label_4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
                   <property name="text">
                    <string>Artist</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_2">
-                  <property name="text">
-                   <string>00:03</string>
                   </property>
                  </widget>
                 </item>
@@ -656,105 +673,262 @@
                   </property>
                  </spacer>
                 </item>
-                <item alignment="Qt::AlignmentFlag::AlignHCenter">
-                 <widget class="QWidget" name="widget_8" native="true">
+                <item>
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>00:03</string>
+                  </property>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                 <widget class="QWidget" name="PartButtons" native="true">
                   <property name="minimumSize">
                    <size>
                     <width>400</width>
                     <height>0</height>
                    </size>
                   </property>
+                  <property name="styleSheet">
+                   <string notr="true">#PartButtons{
+	border: 1px solid #848484;
+	border-radius: 20px;
+}</string>
+                  </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_11">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
                    <property name="topMargin">
-                    <number>0</number>
+                    <number>3</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>10</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>0</number>
+                    <number>3</number>
                    </property>
                    <item>
                     <layout class="QHBoxLayout" name="horizontalLayout_10">
+                     <property name="spacing">
+                      <number>0</number>
+                     </property>
                      <item>
                       <widget class="QPushButton" name="pushButton_7">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::MediaPlaylistShuffle"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/16.png</normaloff>:/JukeBox/Icon/16.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>30</width>
+                         <height>30</height>
+                        </size>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="pushButton_6">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::SystemReboot"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/9.png</normaloff>:/JukeBox/Icon/9.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>30</width>
+                         <height>30</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_3">
+                       <property name="maximumSize">
+                        <size>
+                         <width>1</width>
+                         <height>27</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QLabel {
+	background-color: #848484;
+}</string>
+                       </property>
+                       <property name="text">
+                        <string/>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="pushButton_8">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::MediaPlaybackStop"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/2.png</normaloff>:/JukeBox/Icon/2.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>30</width>
+                         <height>30</height>
+                        </size>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="pushButton_5">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::MediaSeekBackward"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/left.png</normaloff>:/JukeBox/Icon/left.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>40</width>
+                         <height>40</height>
+                        </size>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="pushButton_4">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+	border-radius: 10px;
+}
+
+
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/1.png</normaloff>:/JukeBox/Icon/1.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>40</width>
+                         <height>40</height>
+                        </size>
+                       </property>
+                       <property name="default">
+                        <bool>false</bool>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="pushButton_9">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
+                       </property>
                        <property name="text">
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset theme="QIcon::ThemeIcon::MediaSeekForward"/>
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/right.png</normaloff>:/JukeBox/Icon/right.png</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>40</width>
+                         <height>30</height>
+                        </size>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="sound">
-                       <property name="maximumSize">
-                        <size>
-                         <width>20</width>
-                         <height>20</height>
-                        </size>
+                      <widget class="QPushButton" name="pushButton">
+                       <property name="cursor">
+                        <cursorShape>PointingHandCursor</cursorShape>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{
+	border: none;
+	background-color: transparent;
+	padding: 0px;
+}
+</string>
                        </property>
                        <property name="text">
                         <string/>
                        </property>
-                       <property name="pixmap">
-                        <pixmap>audio.png</pixmap>
+                       <property name="icon">
+                        <iconset resource="resources.qrc">
+                         <normaloff>:/JukeBox/Icon/11.png</normaloff>:/JukeBox/Icon/11.png</iconset>
                        </property>
-                       <property name="scaledContents">
-                        <bool>true</bool>
+                       <property name="iconSize">
+                        <size>
+                         <width>25</width>
+                         <height>25</height>
+                        </size>
                        </property>
                       </widget>
                      </item>
@@ -793,9 +967,23 @@
                  </spacer>
                 </item>
                 <item>
+                 <widget class="QWidget" name="widget" native="true">
+                  <property name="minimumSize">
+                   <size>
+                    <width>120</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="addMusic">
                   <property name="text">
                    <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/JukeBox/Icon/add.png</normaloff>:/JukeBox/Icon/add.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -838,6 +1026,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
