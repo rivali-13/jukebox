@@ -29,11 +29,25 @@ public:
     ~home();
 
     void LoadMusicFiles( QString Address = "/music");
-    Ui::home* GetUi();
+    void playMusic(const QString &filePath);
 
 
 private slots:
     void on_addMusic_clicked();
+
+    void on_exit_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void on_pushButton_4_clicked();
+
+    void on_tableMusic_doubleClicked(const QModelIndex &index);
+
+    void stopMusic();
+
+    void pauseMusic();
 
 private:
     Ui::home *ui;

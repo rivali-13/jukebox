@@ -1,14 +1,19 @@
 #include "home.h"
+#define address 3
 
 home::home(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::home )
 {
     ui->setupUi(this);
+    this->showFullScreen();
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_TranslucentBackground);
+
 
 // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
@@ -31,11 +36,6 @@ home::home(QWidget *parent)
 //***
 }
 
-
-Ui::home* home::GetUi()
-{
-    return ui;
-}
 
 
 home::~home()
@@ -135,4 +135,90 @@ void home::on_addMusic_clicked()
         }
         ui->tableMusic->resizeColumnsToContents();
     }
+}
+
+void home::on_exit_clicked()
+{
+    this->close();
+}
+
+
+void home::on_pushButton_2_clicked()
+{
+    if (!this->isFullScreen())
+    this->showFullScreen();
+    else this->showNormal();
+}
+
+
+void home::on_pushButton_3_clicked()
+{
+    this->showMinimized();
+}
+
+void home::playMusic(const QString &filePath)
+{
+    if (!audioOutput) {
+        audioOutput = new QAudioOutput(this);
+        player->setAudioOutput(audioOutput);
+    }
+    player->setSource(QUrl::fromLocalFile(filePath));
+    player->play();
+}
+
+void home::on_pushButton_4_clicked()
+{
+    int row = ui->tableMusic->currentRow();
+    if (row < 0) return;
+
+    QString filePath = ui->tableMusic->item(row, address)->text();
+
+    switch (player->playbackState()) {
+    case QMediaPlayer::PlayingState:
+        pauseMusic();
+        break;
+    case QMediaPlayer::PausedState:
+        player->play(); // Continue from pause
+        break;
+    case QMediaPlayer::StoppedState:
+    default:
+        playMusic(filePath); // Start new song
+        break;
+    }
+}
+
+
+void home::on_tableMusic_doubleClicked(const QModelIndex &index)
+{
+    int row = index.row();
+    if (row < 0) return;
+
+    QString filePath = ui->tableMusic->item(row, address)->text();
+
+    // If the same song is already loaded, toggle pause/play
+    if (player->source().toLocalFile() == filePath) {
+        switch (player->playbackState()) {
+        case QMediaPlayer::PlayingState:
+            pauseMusic();
+            break;
+        case QMediaPlayer::PausedState:
+            player->play();
+            break;
+        case QMediaPlayer::StoppedState:
+        default:
+            playMusic(filePath);
+            break;
+        }
+    } else {
+        playMusic(filePath); // Play new song
+    }
+}
+void home::stopMusic()
+{
+    if (player) player->stop();
+}
+
+void home::pauseMusic()
+{
+    if (player) player->pause();
 }

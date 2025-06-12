@@ -243,8 +243,14 @@
                  <widget class="QTableWidget" name="tableMusic">
                   <property name="font">
                    <font>
-                    <pointsize>7</pointsize>
+                    <family>Segoe UI</family>
+                    <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <bold>false</bold>
                    </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
                   </property>
                   <column>
                    <property name="text">
