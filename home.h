@@ -10,6 +10,9 @@
 #include <QMediaPlayer>
 #include <QMediaMetaData>
 #include <QListWidget>
+#include <QFileDialog>
+#include <QAudioOutput>
+#include <QMediaPlayer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -29,7 +32,13 @@ public:
     Ui::home* GetUi();
 
 
+private slots:
+    void on_addMusic_clicked();
+
 private:
     Ui::home *ui;
+    QMediaPlayer *player;
+    QAudioOutput *audioOutput;
+    void extractMetadata(const QString &filePath, int row);
 };
 #endif // home_H

@@ -5,6 +5,10 @@ home::home(QWidget *parent)
     , ui(new Ui::home )
 {
     ui->setupUi(this);
+    ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    player = new QMediaPlayer(this);
+    audioOutput = new QAudioOutput(this);
+    player->setAudioOutput(audioOutput);
 
 // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
@@ -69,3 +73,66 @@ void home::LoadMusicFiles(QString Address)
     ui->tableMusic->resizeColumnsToContents();
 }
 // ***
+
+
+void home::extractMetadata(const QString &filePath, int row)
+{
+    player->setSource(QUrl::fromLocalFile(filePath));
+
+    // منتظر می‌مانیم تا متادیتا لود شود
+    QEventLoop loop;
+    connect(player, &QMediaPlayer::metaDataChanged, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QString artist = player->metaData().value(QMediaMetaData::AlbumArtist).toString();
+    QString title = player->metaData().value(QMediaMetaData::Title).toString();
+    qint64 duration = player->duration(); // میلی‌ثانیه
+
+    if (title.isEmpty()) {
+        QFileInfo fileInfo(filePath);
+        title = fileInfo.completeBaseName();
+    }
+
+    // تبدیل مدت زمان به فرمت mm:ss
+    int minutes = duration / 60000;
+    int seconds = (duration % 60000) / 1000;
+    QString durationStr = QString("%1:%2")
+                              .arg(minutes)
+                              .arg(seconds, 2, 10, QChar('0'));
+
+    // اضافه کردن به جدول
+    ui->tableMusic->setItem(row, 4, new QTableWidgetItem(artist));
+    ui->tableMusic->setItem(row, 1, new QTableWidgetItem(title));
+    ui->tableMusic->setItem(row, 2, new QTableWidgetItem(durationStr));
+}
+
+void home::on_addMusic_clicked()
+{
+    QStringList files = QFileDialog::getOpenFileNames(
+        this,
+        tr("Select Music Files"),
+        QDir::homePath(),
+        tr("Audio Files (*.mp3 *.wav)")
+        );
+
+    if (!files.isEmpty()) {
+        foreach (const QString &filePath, files) {
+            QFileInfo fileInfo(filePath);
+
+            QString fileName = fileInfo.completeBaseName();
+            QString format = fileInfo.suffix().toUpper();
+            QString size = QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 2) + "MB";
+
+            int row = ui->tableMusic->rowCount();
+            ui->tableMusic->insertRow(row);
+
+            // همان ترتیبی که در LoadMusicFiles استفاده کردید
+            //ui->tableMusic->setItem(row, 2, new QTableWidgetItem(fileName));
+            ui->tableMusic->setItem(row, 3, new QTableWidgetItem(filePath));
+            ui->tableMusic->setItem(row, 0, new QTableWidgetItem(format));
+            ui->tableMusic->setItem(row, 5, new QTableWidgetItem(size));
+            extractMetadata(filePath, row);
+        }
+        ui->tableMusic->resizeColumnsToContents();
+    }
+}
