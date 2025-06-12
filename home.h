@@ -52,6 +52,8 @@ private slots:
 
     void pauseMusic();
 
+    void on_valume_clicked();
+
 private:
     Ui::home *ui;
     QMediaPlayer *player;

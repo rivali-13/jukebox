@@ -148,24 +148,31 @@ void home::playMusic(const QString &filePath)
 void home::on_pushButton_4_clicked()
 {
     int row = ui->tableMusic->currentRow();
-    if (row < 0) return;
+
+    // If no row is selected but table is not empty, play the first row
+    if (row < 0 && ui->tableMusic->rowCount() > 0) {
+        row = 0;
+        ui->tableMusic->selectRow(row); // Optional: visually select the row
+    }
+    if (row < 0) return; // Still no valid row
 
     QString filePath = ui->tableMusic->item(row, address)->text();
     switch (player->playbackState()) {
     case QMediaPlayer::PlayingState:
         pauseMusic();
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
         break;
     case QMediaPlayer::PausedState:
         player->play(); // Continue from pause
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
         break;
     case QMediaPlayer::StoppedState:
     default:
         playMusic(filePath); // Start new song
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon (set directly)
         break;
     }
 }
-
-
 void home::on_tableMusic_doubleClicked(const QModelIndex &index)
 {
     int row = index.row();
@@ -178,18 +185,22 @@ void home::on_tableMusic_doubleClicked(const QModelIndex &index)
         switch (player->playbackState()) {
         case QMediaPlayer::PlayingState:
             pauseMusic();
+            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
             break;
         case QMediaPlayer::PausedState:
             player->play();
+            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
             break;
         case QMediaPlayer::StoppedState:
         default:
             playMusic(filePath);
+            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon (set directly)
             break;
         }
     } else {
         playMusic(filePath); // Play new song
     }
+
 }
 void home::stopMusic()
 {
@@ -204,11 +215,35 @@ void home::pauseMusic()
 void home::onPositionChanged(qint64 position)
 {
     // Only update if the user is not dragging
-    if (!ui->progressBar->isSliderDown())
+    if (!ui->progressBar->isSliderDown()){
+        int minutes = position / 60000;
+        int seconds = (position % 60000) / 1000;
+        QString durationStr = QString("%1:%2")
+                                  .arg(minutes, 2, 10, QChar('0'))
+                                  .arg(seconds, 2, 10, QChar('0'));
+        ui->label_2->setText(durationStr);
         ui->progressBar->setValue(static_cast<int>(position / 1000));
+    }
 }
 
 void home::onDurationChanged(qint64 duration)
 {
     ui->progressBar->setMaximum(static_cast<int>(duration / 1000));
 }
+
+void home::on_valume_clicked()
+{
+    if (!audioOutput) return;
+
+    // Toggle mute
+    bool isMuted = audioOutput->isMuted();
+    audioOutput->setMuted(!isMuted);
+
+    // Optionally, update the button icon to reflect mute state
+    if (isMuted) {
+        ui->valume->setIcon(QIcon(":/JukeBox/Icon/11.png")); // Unmuted icon
+    } else {
+        ui->valume->setIcon(QIcon(":/JukeBox/Icon/12.png"));     // Muted icon (add this to your resources)
+    }
+}
+
