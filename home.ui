@@ -248,11 +248,6 @@
                   </property>
                   <column>
                    <property name="text">
-                    <string>Album</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
                     <string>Format</string>
                    </property>
                   </column>
@@ -278,17 +273,7 @@
                   </column>
                   <column>
                    <property name="text">
-                    <string>Composer</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
                     <string>Size</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Parental rating</string>
                    </property>
                   </column>
                  </widget>
@@ -1016,7 +1001,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
