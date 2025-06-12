@@ -14,6 +14,7 @@
 #include <QAudioOutput>
 #include <QMediaPlayer>
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class home;
@@ -27,12 +28,14 @@ class home : public QMainWindow
 public:
     home(QWidget *parent = nullptr);
     ~home();
-
-    void LoadMusicFiles( QString Address = "/music");
     void playMusic(const QString &filePath);
 
 
 private slots:
+    void onPositionChanged(qint64 position);
+
+    void onDurationChanged(qint64 duration);
+
     void on_addMusic_clicked();
 
     void on_exit_clicked();
@@ -54,5 +57,7 @@ private:
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     void extractMetadata(const QString &filePath, int row);
+    void set_progressbar(int parts);
+
 };
 #endif // home_H

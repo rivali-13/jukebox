@@ -13,6 +13,20 @@ home::home(QWidget *parent)
     player->setAudioOutput(audioOutput);
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_TranslucentBackground);
+    connect(player, &QMediaPlayer::positionChanged, this, &home::onPositionChanged);
+    connect(player, &QMediaPlayer::durationChanged, this, &home::onDurationChanged);
+    connect(ui->progressBar, &QSlider::sliderMoved, this, [=](int value){
+        player->setPosition(value * 1000); // value is in seconds, position is in ms
+    });
+    connect(ui->volumeSlider, &QSlider::valueChanged, this, [=](int value){
+        if (audioOutput) {
+            audioOutput->setVolume(value / 100.0); // QAudioOutput expects 0.0 - 1.0
+        }
+    });
+
+
 
 
 // **************  Picture Music  **********************
@@ -20,7 +34,6 @@ home::home(QWidget *parent)
     ui->cover->setPixmap(pix);
     ui->cover1->setPixmap(pix);
 //********
-    LoadMusicFiles();
 
 //*****************************     music PlayList For Test **************************
     ui->playlist->setItemDelegate(new style_playlistitem(ui->playlist));
@@ -37,70 +50,36 @@ home::home(QWidget *parent)
 }
 
 
-
 home::~home()
 {
     delete ui;
 }
 
 
-//************ Read music for Folder ( Default = "/music" ) ***********************
-void home::LoadMusicFiles(QString Address)
-{
-    QDir musicDir(QCoreApplication::applicationDirPath() + "/../../.." + Address);
-
-    QStringList nameFilters = {"*.mp3", "*.wav"};
-    QFileInfoList files  = musicDir.entryInfoList(nameFilters, QDir::Files);
-
-    for ( const QFileInfo& fileInfo : files)
-    {
-        qDebug() << fileInfo.fileName();
-        QString fileName = fileInfo.completeBaseName();
-        QString filePath = fileInfo.absoluteFilePath();
-        QString format = fileInfo.suffix().toUpper();
-        QString size = QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 2) + "MB";
-
-
-        int currentRow = ui->tableMusic->rowCount();
-        ui->tableMusic->insertRow(currentRow);
-
-        ui->tableMusic->setItem(currentRow, 2, new QTableWidgetItem(fileName));
-        ui->tableMusic->setItem(currentRow, 4, new QTableWidgetItem(filePath));
-        ui->tableMusic->setItem(currentRow, 1, new QTableWidgetItem(format));
-        ui->tableMusic->setItem(currentRow, 7, new QTableWidgetItem(size));
-
-    }
-    ui->tableMusic->resizeColumnsToContents();
-}
-// ***
-
-
 void home::extractMetadata(const QString &filePath, int row)
 {
-    player->setSource(QUrl::fromLocalFile(filePath));
+    QMediaPlayer tempPlayer;
+    tempPlayer.setSource(QUrl::fromLocalFile(filePath));
 
-    // منتظر می‌مانیم تا متادیتا لود شود
     QEventLoop loop;
-    connect(player, &QMediaPlayer::metaDataChanged, &loop, &QEventLoop::quit);
+    QObject::connect(&tempPlayer, &QMediaPlayer::metaDataChanged, &loop, &QEventLoop::quit);
     loop.exec();
 
-    QString artist = player->metaData().value(QMediaMetaData::AlbumArtist).toString();
-    QString title = player->metaData().value(QMediaMetaData::Title).toString();
-    qint64 duration = player->duration(); // میلی‌ثانیه
+    QString artist = tempPlayer.metaData().value(QMediaMetaData::AlbumArtist).toString();
+    QString title = tempPlayer.metaData().value(QMediaMetaData::Title).toString();
+    qint64 duration = tempPlayer.duration();
 
     if (title.isEmpty()) {
         QFileInfo fileInfo(filePath);
         title = fileInfo.completeBaseName();
     }
 
-    // تبدیل مدت زمان به فرمت mm:ss
     int minutes = duration / 60000;
     int seconds = (duration % 60000) / 1000;
     QString durationStr = QString("%1:%2")
                               .arg(minutes)
                               .arg(seconds, 2, 10, QChar('0'));
 
-    // اضافه کردن به جدول
     ui->tableMusic->setItem(row, 4, new QTableWidgetItem(artist));
     ui->tableMusic->setItem(row, 1, new QTableWidgetItem(title));
     ui->tableMusic->setItem(row, 2, new QTableWidgetItem(durationStr));
@@ -172,7 +151,6 @@ void home::on_pushButton_4_clicked()
     if (row < 0) return;
 
     QString filePath = ui->tableMusic->item(row, address)->text();
-
     switch (player->playbackState()) {
     case QMediaPlayer::PlayingState:
         pauseMusic();
@@ -221,4 +199,16 @@ void home::stopMusic()
 void home::pauseMusic()
 {
     if (player) player->pause();
+}
+
+void home::onPositionChanged(qint64 position)
+{
+    // Only update if the user is not dragging
+    if (!ui->progressBar->isSliderDown())
+        ui->progressBar->setValue(static_cast<int>(position / 1000));
+}
+
+void home::onDurationChanged(qint64 duration)
+{
+    ui->progressBar->setMaximum(static_cast<int>(duration / 1000));
 }
