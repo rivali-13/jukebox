@@ -160,17 +160,20 @@ void home::on_pushButton_4_clicked()
     switch (player->playbackState()) {
     case QMediaPlayer::PlayingState:
         pauseMusic();
-        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
         break;
     case QMediaPlayer::PausedState:
         player->play(); // Continue from pause
-        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
         break;
     case QMediaPlayer::StoppedState:
     default:
         playMusic(filePath); // Start new song
-        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon (set directly)
         break;
+    }
+
+    if (player->playbackState() == QMediaPlayer::PlayingState) {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
+    } else {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
     }
 }
 void home::on_tableMusic_doubleClicked(const QModelIndex &index)
@@ -185,20 +188,23 @@ void home::on_tableMusic_doubleClicked(const QModelIndex &index)
         switch (player->playbackState()) {
         case QMediaPlayer::PlayingState:
             pauseMusic();
-            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
             break;
         case QMediaPlayer::PausedState:
             player->play();
-            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
             break;
         case QMediaPlayer::StoppedState:
         default:
             playMusic(filePath);
-            ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon (set directly)
             break;
         }
     } else {
         playMusic(filePath); // Play new song
+    }
+
+    if (player->playbackState() == QMediaPlayer::PlayingState) {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
+    } else {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
     }
 
 }
