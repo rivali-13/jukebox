@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QAudioOutput>
 #include <QMediaPlayer>
+#include <QScreen>
 
 
 QT_BEGIN_NAMESPACE

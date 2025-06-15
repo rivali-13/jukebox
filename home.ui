@@ -28,12 +28,13 @@
    </property>
    <property name="styleSheet">
     <string notr="true">#centralwidget {
-	border-radius: 20px; 
-	border: 1px solid #0632a2; 
 	background-color: #201f1d;
 }</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>7</number>
+    </property>
     <property name="leftMargin">
      <number>1</number>
     </property>
@@ -100,7 +101,6 @@
              <property name="styleSheet">
               <string notr="true">#LeftPageMusic {
 	background-color: #232220;
-	border-top-left-radius: 20px 
 }</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -1006,24 +1006,6 @@
      </layout>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1000</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
   </widget>
  </widget>
  <resources>
