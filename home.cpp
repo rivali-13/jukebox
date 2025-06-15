@@ -6,15 +6,14 @@ home::home(QWidget *parent)
     , ui(new Ui::home )
 {
     ui->setupUi(this);
-    this->showFullScreen();
+
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
-    this->setWindowFlags(Qt::FramelessWindowHint);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
-    this->setWindowFlags(Qt::FramelessWindowHint);
-    this->setAttribute(Qt::WA_TranslucentBackground);
+    this->showFullScreen();
     connect(player, &QMediaPlayer::positionChanged, this, &home::onPositionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &home::onDurationChanged);
     connect(ui->progressBar, &QSlider::sliderMoved, this, [=](int value){
@@ -25,6 +24,7 @@ home::home(QWidget *parent)
             audioOutput->setVolume(value / 100.0); // QAudioOutput expects 0.0 - 1.0
         }
     });
+
 
 
 
@@ -125,9 +125,19 @@ void home::on_exit_clicked()
 void home::on_pushButton_2_clicked()
 {
     if (!this->isFullScreen())
-    this->showFullScreen();
-    else this->showNormal();
+    {
+        ui->centralwidget->setStyleSheet("#centralwidget { background-color: #201f1d;	border-radius: 0px;    border: none }");
+        ui->LeftPageMusic->setStyleSheet("#LeftPageMusic { background-color: #232220;   border-top-left-radius: 0px }");
+        this->showFullScreen();
+    }
+    else
+    {
+        this->showNormal();
+        ui->centralwidget->setStyleSheet("#centralwidget {  background-color: #201f1d;	border-radius: 20px;    border: 1px solid #0632a2; }");
+        ui->LeftPageMusic->setStyleSheet("#LeftPageMusic { background-color: #232220;   border-top-left-radius: 20px }");
+    }
 }
+
 
 
 void home::on_pushButton_3_clicked()
