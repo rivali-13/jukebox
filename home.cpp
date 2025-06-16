@@ -1,11 +1,21 @@
 #include "home.h"
-#define address 3
+#define c_address 4
+#define c_size 5
+#define c_artist 2
+#define c_length 1
+#define c_title 0
+#define c_format 3
 
 home::home(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::home )
 {
     ui->setupUi(this);
+    ui->label_4->setText("");
+    ui->artist->setText("");
+    ui->title->setText("");
+    ui->infoMusic->setText("");
+    ui->progressBar->setValue(0);
 
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
@@ -77,12 +87,14 @@ void home::extractMetadata(const QString &filePath, int row)
     int minutes = duration / 60000;
     int seconds = (duration % 60000) / 1000;
     QString durationStr = QString("%1:%2")
-                              .arg(minutes)
+                              .arg(minutes, 2, 10, QChar('0'))
                               .arg(seconds, 2, 10, QChar('0'));
 
-    ui->tableMusic->setItem(row, 4, new QTableWidgetItem(artist));
-    ui->tableMusic->setItem(row, 1, new QTableWidgetItem(title));
-    ui->tableMusic->setItem(row, 2, new QTableWidgetItem(durationStr));
+
+    ui->tableMusic->setItem(row, c_artist, new QTableWidgetItem(artist));
+    ui->tableMusic->setItem(row, c_title, new QTableWidgetItem(title));
+    ui->tableMusic->setItem(row, c_length, new QTableWidgetItem(durationStr));
+
 }
 
 void home::on_addMusic_clicked()
@@ -96,6 +108,7 @@ void home::on_addMusic_clicked()
 
     if (!files.isEmpty()) {
         foreach (const QString &filePath, files) {
+
             QFileInfo fileInfo(filePath);
 
             QString fileName = fileInfo.completeBaseName();
@@ -107,9 +120,9 @@ void home::on_addMusic_clicked()
 
             // همان ترتیبی که در LoadMusicFiles استفاده کردید
             //ui->tableMusic->setItem(row, 2, new QTableWidgetItem(fileName));
-            ui->tableMusic->setItem(row, 3, new QTableWidgetItem(filePath));
-            ui->tableMusic->setItem(row, 0, new QTableWidgetItem(format));
-            ui->tableMusic->setItem(row, 5, new QTableWidgetItem(size));
+            ui->tableMusic->setItem(row, c_address, new QTableWidgetItem(filePath));
+            ui->tableMusic->setItem(row, c_format, new QTableWidgetItem(format));
+            ui->tableMusic->setItem(row, c_size, new QTableWidgetItem(size));
             extractMetadata(filePath, row);
         }
         ui->tableMusic->resizeColumnsToContents();
@@ -166,7 +179,7 @@ void home::on_pushButton_4_clicked()
     }
     if (row < 0) return; // Still no valid row
 
-    QString filePath = ui->tableMusic->item(row, address)->text();
+    QString filePath = ui->tableMusic->item(row, c_address)->text();
     switch (player->playbackState()) {
     case QMediaPlayer::PlayingState:
         pauseMusic();
@@ -185,13 +198,15 @@ void home::on_pushButton_4_clicked()
     } else {
         ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
     }
+    set_info();
 }
+
 void home::on_tableMusic_doubleClicked(const QModelIndex &index)
 {
     int row = index.row();
     if (row < 0) return;
 
-    QString filePath = ui->tableMusic->item(row, address)->text();
+    QString filePath = ui->tableMusic->item(row, c_address)->text();
 
     // If the same song is already loaded, toggle pause/play
     if (player->source().toLocalFile() == filePath) {
@@ -216,7 +231,7 @@ void home::on_tableMusic_doubleClicked(const QModelIndex &index)
     } else {
         ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
     }
-
+    set_info();
 }
 void home::stopMusic()
 {
@@ -263,3 +278,23 @@ void home::on_valume_clicked()
     }
 }
 
+void home::set_info(){
+    int cur_row = ui->tableMusic->currentRow();
+    if (cur_row < 0) return;
+    QString artist = ui->tableMusic->item(cur_row, c_artist)->text();
+    QString title = ui->tableMusic->item(cur_row, c_title)->text();
+    QString duration = ui->tableMusic->item(cur_row, c_length)->text();
+    ui->label_4->setText(artist);
+    ui->artist->setText(artist);
+    ui->title->setText(title);
+    ui->title->autoFillBackground();
+    QString format = ui->tableMusic->item(cur_row, c_format)->text();
+    QString size = ui->tableMusic->item(cur_row, c_size)->text();
+    QString info = "<br><table border='0' cellspacing='4' cellpadding='4'>"
+                   "<tr><td><b>Format:</b></td><td>" + format + "</td></tr>"
+                              "<tr><td><b>Size:</b></td><td>" + size + "</td></tr>"
+                            "<tr><td><b>Length:</b></td><td>" + duration + "</td></tr>"
+                                "</table>";
+
+    ui->infoMusic->setText(info);
+}

@@ -184,7 +184,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Artist</string>
+                   <string>artist</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -254,11 +254,6 @@
                   </property>
                   <column>
                    <property name="text">
-                    <string>Format</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
                     <string>Title</string>
                    </property>
                   </column>
@@ -269,12 +264,17 @@
                   </column>
                   <column>
                    <property name="text">
-                    <string>Address</string>
+                    <string>artist</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>artist</string>
+                    <string>Format</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Address</string>
                    </property>
                   </column>
                   <column>
@@ -647,7 +647,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Artist</string>
+                   <string>artist</string>
                   </property>
                  </widget>
                 </item>
@@ -667,7 +667,7 @@
                 <item>
                  <widget class="QLabel" name="label_2">
                   <property name="text">
-                   <string>00:03</string>
+                   <string>00:00</string>
                   </property>
                  </widget>
                 </item>

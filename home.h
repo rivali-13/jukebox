@@ -62,5 +62,7 @@ private:
     void extractMetadata(const QString &filePath, int row);
     void set_progressbar(int parts);
 
+    void set_cover();
+    void set_info();
 };
 #endif // home_H
