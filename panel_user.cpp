@@ -38,7 +38,7 @@ void Panel_User::on_pushButton_clicked()
 
 void Panel_User::on_pushButton_3_clicked() //***
 {
-    home * pagemusic = new home();
+    home * pagemusic = currentUser.get_m_player();
     this->close();
     pagemusic->show();
 }
