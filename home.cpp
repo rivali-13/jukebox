@@ -17,7 +17,6 @@ home::home(QWidget *parent)
     ui->infoMusic->setText("");
     ui->progressBar->setValue(0);
 
-
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -51,8 +50,6 @@ home::home(QWidget *parent)
     ui->tableMusic->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableMusic, &QTableWidget::customContextMenuRequested,
             this, &home::showContextMenu);
-
-    ui->tableMusic->horizontalHeader()->setStretchLastSection(true);
 }
 
 
@@ -60,7 +57,6 @@ home::~home()
 {
     delete ui;
 }
-
 
 void home::extractMetadata(const QString &filePath, int row)
 {
@@ -135,7 +131,6 @@ void home::on_exit_clicked()
     this->close();
 }
 
-
 void home::on_pushButton_2_clicked()
 {
     if (!this->isFullScreen())
@@ -151,8 +146,6 @@ void home::on_pushButton_2_clicked()
         ui->LeftPageMusic->setStyleSheet("#LeftPageMusic { background-color: #232220;   border-top-left-radius: 20px }");
     }
 }
-
-
 
 void home::on_pushButton_3_clicked()
 {
@@ -234,6 +227,7 @@ void home::on_tableMusic_doubleClicked(const QModelIndex &index)
     }
     set_info();
 }
+
 void home::stopMusic()
 {
     if (player) player->stop();
@@ -263,8 +257,7 @@ void home::onDurationChanged(qint64 duration)
     ui->progressBar->setMaximum(static_cast<int>(duration / 1000));
 }
 
-void home::on_valume_clicked()
-{
+void home::on_valume_clicked(){
     if (!audioOutput) return;
 
     // Toggle mute
@@ -279,26 +272,30 @@ void home::on_valume_clicked()
     }
 }
 
-void home::showContextMenu(const QPoint &pos) {
+void home::showContextMenu(const QPoint &pos)
+{
     QModelIndex index = ui->tableMusic->indexAt(pos);
     if (!index.isValid() || ui->tableMusic->item(index.row(), index.column()) == nullptr)
         return;
 
-    QMenu menu(ui->tableMusic);
+    QMenu menu(this);
+    QMenu* add_to_list = menu.addMenu("Add to Playlist");
 
-    QAction *copyAction = menu.addAction("add to play list");
-    //QAction *cutAction = menu.addAction("Cut");
-    //QAction *pasteAction = menu.addAction("Paste");
+    for (int i = 0; i < ui->tab_playlist->count(); ++i) {
+        QString tabName = ui->tab_playlist->tabText(i);
+        QAction* action = add_to_list->addAction(tabName);
+        action->setData(i);
+    }
 
     QPoint globalPos = ui->tableMusic->viewport()->mapToGlobal(pos);
     QAction *selectedAction = menu.exec(globalPos);
 
-    if (selectedAction == copyAction) {
-        // عملیات کپی
-        qDebug() << "Copy triggered";
+    if (selectedAction && selectedAction->parent() == add_to_list) {
+        int tabIndex = selectedAction->data().toInt();
+        QString itemText = ui->tableMusic->item(index.row(), c_address)->text();
+        add_to_playlist(tabIndex, itemText);
     }
 }
-
 
 void home::set_info(){
     int cur_row = ui->tableMusic->currentRow();
@@ -330,7 +327,66 @@ void home::on_new_playlist_clicked()
 
 void home::creat_list(const QString &name)
 {
-    QWidget* newTab = new QWidget();
-    ui->tab_playlist->addTab(newTab, name);
+    // ساختن ویجت مادر (صفحه تب)
+    QWidget* newtab = new QWidget();
+
+    // می‌تونیم یک layout برای صفحه تب تنظیم کنیم تا widget ها داخلش جا بگیرند
+    QVBoxLayout* layout = new QVBoxLayout(newtab);
+
+    // ساختن QListWidget
+    QListWidget* new_list = new QListWidget();
+
+    // (اختیاری ولی بسیار مفید) ست کردن objectName برای پیدا کردن راحت‌تر
+    new_list->setObjectName("playlistListWidget");
+
+    // اضافه کردن لیست به layout
+    layout->addWidget(new_list);
+
+    // اضافه کردن تب به QTabWidget
+    ui->tab_playlist->addTab(newtab, name);
+}
+
+void home::add_to_playlist(int tabIndex, const QString& itemText)
+{
+    QWidget* tabWidget = ui->tab_playlist->widget(tabIndex);
+    if (!tabWidget) {
+        return;
+    }
+
+    QListWidget* listWidget = tabWidget->findChild<QListWidget*>();
+    if (!listWidget) {
+        return;
+    }
+
+    // بررسی آهنگ تکراری بر اساس آدرس (itemAddress)
+    for (int i = 0; i < listWidget->count(); ++i) {
+        QListWidgetItem* existingItem = listWidget->item(i);
+        QString existingAddress = existingItem->data(Qt::UserRole + 1).toString();
+        if (itemText == existingAddress) {
+            return; // آهنگ تکراری است، اضافه نکن
+        }
+    }
+
+    listWidget->setItemDelegate(new style_playlistitem(listWidget));
+
+    QListWidgetItem* item = new QListWidgetItem();
+
+    // جستجوی اطلاعات آهنگ در جدول اصلی
+    for (int i = 0; i < ui->tableMusic->rowCount(); ++i) {
+        if (itemText == ui->tableMusic->item(i, c_address)->text()) {
+            QString title = ui->tableMusic->item(i, c_title)->text();
+            QString format = ui->tableMusic->item(i, c_format)->text();
+            QString size = ui->tableMusic->item(i, c_size)->text();
+            QString length = ui->tableMusic->item(i, c_length)->text();
+
+            item->setText(title);
+            item->setData(Qt::UserRole, format + " :: " + size + ", " + length);
+            item->setData(Qt::UserRole + 1, itemText); // ذخیره آدرس در data جهت بررسی تکراری بودن
+
+            break;
+        }
+    }
+
+    listWidget->addItem(item);
 }
 

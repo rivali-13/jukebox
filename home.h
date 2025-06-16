@@ -17,7 +17,6 @@
 #include <QMenu>
 #include "new_playlist.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class home;
@@ -34,6 +33,7 @@ public:
     void playMusic(const QString &filePath);
 
 
+    void add_to_playlist(int tabIndex, const QString& itemText);
 private slots:
     void onPositionChanged(qint64 position);
 

@@ -6,6 +6,7 @@ New_playlist::New_playlist(QWidget *parent)
     , ui(new Ui::New_playlist)
 {
     ui->setupUi(this);
+    ui->lineEdit->setFocus();
 }
 
 New_playlist::~New_playlist()
