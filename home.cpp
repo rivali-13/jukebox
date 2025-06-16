@@ -297,26 +297,37 @@ void home::showContextMenu(const QPoint &pos)
     }
 }
 
-void home::set_info(){
-    int cur_row = ui->tableMusic->currentRow();
-    if (cur_row < 0) return;
-    QString artist = ui->tableMusic->item(cur_row, c_artist)->text();
-    QString title = ui->tableMusic->item(cur_row, c_title)->text();
-    QString duration = ui->tableMusic->item(cur_row, c_length)->text();
-    ui->label_4->setText(artist);
-    ui->artist->setText(artist);
-    ui->title->setText(title);
-    ui->title->autoFillBackground();
-    QString format = ui->tableMusic->item(cur_row, c_format)->text();
-    QString size = ui->tableMusic->item(cur_row, c_size)->text();
-    QString info = "<br><table border='0' cellspacing='4' cellpadding='4'>"
-                   "<tr><td><b>Format:</b></td><td>" + format + "</td></tr>"
-                              "<tr><td><b>Size:</b></td><td>" + size + "</td></tr>"
-                            "<tr><td><b>Length:</b></td><td>" + duration + "</td></tr>"
-                                "</table>";
+void home::set_info()
+{
 
-    ui->infoMusic->setText(info);
+    QString filePath = player->source().toString(); // به صورت QUrl هست
+    QFileInfo fileInfo(filePath);
+    QString fileName = fileInfo.fileName();
+
+    // حالا این فایل رو توی tableMusic پیدا کن
+    for (int i = 0; i < ui->tableMusic->rowCount(); ++i) {
+        if (ui->tableMusic->item(i, c_address)->text() == filePath) {
+            QString artist = ui->tableMusic->item(i, c_artist)->text();
+            QString title = ui->tableMusic->item(i, c_title)->text();
+            QString duration = ui->tableMusic->item(i, c_length)->text();
+            QString format = ui->tableMusic->item(i, c_format)->text();
+            QString size = ui->tableMusic->item(i, c_size)->text();
+
+            ui->label_4->setText(artist);
+            ui->artist->setText(artist);
+            ui->title->setText(title);
+
+            QString info = "<br><table border='0' cellspacing='4' cellpadding='4'>"
+                           "<tr><td><b>Format:</b></td><td>" + format + "</td></tr>"
+                                      "<tr><td><b>Size:</b></td><td>" + size + "</td></tr>"
+                                    "<tr><td><b>Length:</b></td><td>" + duration + "</td></tr>"
+                                        "</table>";
+            ui->infoMusic->setText(info);
+            return;
+        }
+    }
 }
+
 
 void home::on_new_playlist_clicked()
 {
@@ -358,6 +369,8 @@ void home::add_to_playlist(int tabIndex, const QString& itemText)
         return;
     }
 
+    disconnect(listWidget, &QListWidget::itemDoubleClicked, this, &home::play_list_play);
+    connect(listWidget, &QListWidget::itemDoubleClicked, this, &home::play_list_play);
     // بررسی آهنگ تکراری بر اساس آدرس (itemAddress)
     for (int i = 0; i < listWidget->count(); ++i) {
         QListWidgetItem* existingItem = listWidget->item(i);
@@ -390,3 +403,39 @@ void home::add_to_playlist(int tabIndex, const QString& itemText)
     listWidget->addItem(item);
 }
 
+void home::on_pushButton_8_clicked()
+{
+    player->stop();
+}
+
+void home::on_pushButton_5_clicked()
+{
+    int cur_row = ui->tableMusic->currentRow();
+    int cur_col = ui->tableMusic->currentColumn();
+    ui->tableMusic->setCurrentCell(cur_row-1, cur_col);
+    player->stop();
+    on_pushButton_4_clicked();
+}
+
+void home::on_pushButton_9_clicked()
+{
+    int cur_row = ui->tableMusic->currentRow();
+    int cur_col = ui->tableMusic->currentColumn();
+    ui->tableMusic->setCurrentCell(cur_row+1, cur_col);
+    player->stop();
+    on_pushButton_4_clicked();
+}
+
+void home::play_list_play(QListWidgetItem* item){
+
+    QString filePath = item->data(Qt::UserRole + 1).toString();
+
+    playMusic(filePath); // همیشه آهنگ مربوط به این آیتم رو پخش کن
+
+    if (player->playbackState() == QMediaPlayer::PlayingState) {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/3.png")); // Pause icon
+    } else {
+        ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
+    }
+    set_info();
+}

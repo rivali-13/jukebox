@@ -60,6 +60,13 @@ private slots:
     void showContextMenu(const QPoint &pos);
     void on_new_playlist_clicked();
     void creat_list(const QString &name);
+    void on_pushButton_8_clicked();
+
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_9_clicked();
+
+    void play_list_play(QListWidgetItem* item);
 private:
     Ui::home *ui;
     QMediaPlayer *player;
