@@ -17,6 +17,7 @@ home::home(QWidget *parent)
     ui->infoMusic->setText("");
     ui->progressBar->setValue(0);
 
+
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -43,20 +44,15 @@ home::home(QWidget *parent)
     QPixmap pix(":/JukeBox/Icon/cover.png");
     ui->cover->setPixmap(pix);
     ui->cover1->setPixmap(pix);
-//********
+//*****
 
-//*****************************     music PlayList For Test **************************
-    ui->playlist->setItemDelegate(new style_playlistitem(ui->playlist));
-    QListWidgetItem* item1 = new QListWidgetItem();
-    item1->setText("JukeBox");
-    item1->setData(Qt::UserRole, "MP3 :: 44 kHz, 320 kbps, 7.4 MB, 3:13");
-    ui->playlist->addItem(item1);
 
-    QListWidgetItem* item2 = new QListWidgetItem();
-    item2->setText("JukeBox");
-    item2->setData(Qt::UserRole, "MP3 :: 44 kHz, 320 kbps, 7.4 MB, 3:13");
-    ui->playlist->addItem(item2);
-//***
+
+    ui->tableMusic->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableMusic, &QTableWidget::customContextMenuRequested,
+            this, &home::showContextMenu);
+
+    ui->tableMusic->horizontalHeader()->setStretchLastSection(true);
 }
 
 
@@ -95,6 +91,11 @@ void home::extractMetadata(const QString &filePath, int row)
     ui->tableMusic->setItem(row, c_title, new QTableWidgetItem(title));
     ui->tableMusic->setItem(row, c_length, new QTableWidgetItem(durationStr));
 
+}
+
+void home::tab_text(QString name)
+{
+    ui->tab_playlist->setTabText(0,name);
 }
 
 void home::on_addMusic_clicked()
@@ -278,6 +279,27 @@ void home::on_valume_clicked()
     }
 }
 
+void home::showContextMenu(const QPoint &pos) {
+    QModelIndex index = ui->tableMusic->indexAt(pos);
+    if (!index.isValid() || ui->tableMusic->item(index.row(), index.column()) == nullptr)
+        return;
+
+    QMenu menu(ui->tableMusic);
+
+    QAction *copyAction = menu.addAction("add to play list");
+    //QAction *cutAction = menu.addAction("Cut");
+    //QAction *pasteAction = menu.addAction("Paste");
+
+    QPoint globalPos = ui->tableMusic->viewport()->mapToGlobal(pos);
+    QAction *selectedAction = menu.exec(globalPos);
+
+    if (selectedAction == copyAction) {
+        // عملیات کپی
+        qDebug() << "Copy triggered";
+    }
+}
+
+
 void home::set_info(){
     int cur_row = ui->tableMusic->currentRow();
     if (cur_row < 0) return;
@@ -298,3 +320,17 @@ void home::set_info(){
 
     ui->infoMusic->setText(info);
 }
+
+void home::on_new_playlist_clicked()
+{
+    New_playlist *new_list = new New_playlist(this);
+    connect(new_list, &New_playlist::new_name, this, &home::creat_list);
+    new_list->show();
+}
+
+void home::creat_list(const QString &name)
+{
+    QWidget* newTab = new QWidget();
+    ui->tab_playlist->addTab(newTab, name);
+}
+

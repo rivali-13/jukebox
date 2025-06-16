@@ -14,6 +14,8 @@
 #include <QAudioOutput>
 #include <QMediaPlayer>
 #include <QScreen>
+#include <QMenu>
+#include "new_playlist.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -55,12 +57,16 @@ private slots:
 
     void on_valume_clicked();
 
+    void showContextMenu(const QPoint &pos);
+    void on_new_playlist_clicked();
+    void creat_list(const QString &name);
 private:
     Ui::home *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     void extractMetadata(const QString &filePath, int row);
     void set_progressbar(int parts);
+    void tab_text(QString name);
 
     void set_cover();
     void set_info();

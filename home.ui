@@ -510,38 +510,30 @@
                    <item row="0" column="0">
                     <widget class="QTabWidget" name="tab_playlist">
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>-1</number>
                      </property>
-                     <widget class="QWidget" name="tab">
-                      <attribute name="title">
-                       <string>Tab 1</string>
-                      </attribute>
-                      <layout class="QVBoxLayout" name="verticalLayout_7">
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <item>
-                        <widget class="QListWidget" name="playlist"/>
-                       </item>
-                      </layout>
-                     </widget>
-                     <widget class="QWidget" name="tab_2">
-                      <attribute name="title">
-                       <string>Tab 2</string>
-                      </attribute>
-                     </widget>
                     </widget>
                    </item>
                   </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="new_playlist">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>New playlist</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>16</width>
+                    <height>30</height>
+                   </size>
+                  </property>
                  </widget>
                 </item>
                 <item>
