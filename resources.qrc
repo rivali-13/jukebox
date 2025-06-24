@@ -28,8 +28,11 @@
         <file>Icon/22.png</file>
         <file>Icon/23.png</file>
         <file>Icon/24.png</file>
+	<file>Icon/26.png</file>
+	<file>Icon/27.png</file>
+	<file>Icon/28.png</file>
+	<file>Icon/30.png</file>
 	<file>Icon/left.png</file>
 	<file>Icon/right.png</file>
-    <file>Icon/30.png</file>
     </qresource>
 </RCC>

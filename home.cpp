@@ -19,7 +19,7 @@ home::home(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::home )
 {
-    srand (time(0));
+    srand (time(nullptr));
     ui->setupUi(this);
     ui->label_4->setText("");
     ui->artist->setText("");
@@ -27,13 +27,25 @@ home::home(QWidget *parent)
     ui->infoMusic->setText("");
     ui->progressBar->setValue(0);
 
+
+    ui->moje->setText(""); // Clear any default text
+
+    visualizerTimer = new QTimer(this);
+    connect(visualizerTimer, &QTimer::timeout, this, &home::updateVisualizer);
+    currentVisualizerColor = QColor::fromRgb(rand() % 236 + 30, rand() % 216 + 40, rand() % 200 + 56);
+    ui->moje->installEventFilter(this); // Install event filter on moje label
+    waveModel = false;
+
+    // Start the timer when music plays and stop when it stops
+    // For now, let's start it always, you can tie it to player->playbackState()
+
+
     ui->tableMusic->setEditTriggers(QAbstractItemView::NoEditTriggers);
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
-    this->showFullScreen();
+    this->showMaximized();
     connect(player, &QMediaPlayer::positionChanged, this, &home::onPositionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &home::onDurationChanged);
     connect(ui->progressBar, &QSlider::sliderMoved, this, [=](int value){
@@ -49,27 +61,44 @@ home::home(QWidget *parent)
 
     connect(player, &QMediaPlayer::metaDataChanged, this, &home::set_info);
 
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &home::onMediaStatusChanged);
 
 
+    connect(player, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState state){
+        if (state == QMediaPlayer::PlayingState) {
+            visualizerTimer->start(100);
+        } else {
+            visualizerTimer->stop();
+            updateVisualizer(); // Update one last time to show the fixed pattern
+        }
+    });
 
 
-// **************  Picture Music  **********************
+    // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
-    ui->cover->setPixmap(pix);
-    ui->cover1->setPixmap(pix);
-//*****
+    ui->moje->setPixmap(pix);
+    //*****
 
 
 
     ui->tableMusic->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableMusic, &QTableWidget::customContextMenuRequested,
             this, &home::showContextMenu);
+
+
+    QString username = "testUser"; // مثال: از یک دیالوگ یا تنظیمات بخوانید
+    loadUserData(username);
 }
 
 
 home::~home()
 {
+    QString username = "testUser"; // همان نام کاربری که برای بارگذاری استفاده شد
+    saveUserData(username);
     delete ui;
+    delete player;
+    delete audioOutput;
+    delete visualizerTimer;
 }
 
 void home::extractMetadata(const QString &filePath, int row)
@@ -138,32 +167,6 @@ void home::on_addMusic_clicked()
         }
         ui->tableMusic->resizeColumnsToContents();
     }
-}
-
-void home::on_exit_clicked()
-{
-    this->close();
-}
-
-void home::on_pushButton_2_clicked()
-{
-    if (!this->isFullScreen())
-    {
-        ui->centralwidget->setStyleSheet("#centralwidget { background-color: #201f1d;	border-radius: 0px;    border: none }");
-        ui->LeftPageMusic->setStyleSheet("#LeftPageMusic { background-color: #232220;   border-top-left-radius: 0px }");
-        this->showFullScreen();
-    }
-    else
-    {
-        this->showNormal();
-        ui->centralwidget->setStyleSheet("#centralwidget {  background-color: #201f1d;	border-radius: 20px;    border: 1px solid #0632a2; }");
-        ui->LeftPageMusic->setStyleSheet("#LeftPageMusic { background-color: #232220;   border-top-left-radius: 20px }");
-    }
-}
-
-void home::on_pushButton_3_clicked()
-{
-    this->showMinimized();
 }
 
 void home::playMusic(const QString &filePath)
@@ -360,31 +363,6 @@ void home::set_info()
     QFileInfo fileInfo(filePath);
     QString fileName = fileInfo.fileName();
 
-    // --- NEW LOGIC FOR COVER ART ---
-    QPixmap pixmapToDisplay;
-    QVariant coverArtData = player->metaData().value(QMediaMetaData::CoverArtImage);
-
-    // Check if valid cover art data exists and is not null
-    if (coverArtData.isValid() && !coverArtData.isNull()) {
-        qDebug() << "in cover if";
-        QImage coverImage = coverArtData.value<QImage>(); // QMediaMetaData::CoverArtImage returns a QImage
-        if (!coverImage.isNull()) {
-            // Scale the image to fit the QLabel's size, maintaining aspect ratio
-            // and using smooth transformation for better quality
-            pixmapToDisplay = QPixmap::fromImage(coverImage).scaled(ui->cover->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        }
-    }
-
-    // If no cover art was found or extracted (pixmapToDisplay is null), set the default cover
-    if (pixmapToDisplay.isNull()) {
-        pixmapToDisplay = QPixmap(":/JukeBox/Icon/cover.png"); // Path to your default cover image
-    }
-
-    // Set the pixmap to your QLabel widgets
-    ui->cover->setPixmap(pixmapToDisplay);
-    ui->cover1->setPixmap(pixmapToDisplay);
-    // --- END NEW LOGIC FOR COVER ART ---
-
 
     // The existing logic to find and display text metadata remains the same
     for (int i = 0; i < ui->tableMusic->rowCount(); ++i) {
@@ -421,23 +399,20 @@ void home::on_new_playlist_clicked()
 
 void home::creat_list(const QString &name)
 {
-    // ساختن ویجت مادر (صفحه تب)
-    QWidget* newtab = new QWidget();
+    QWidget* newTab = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(newTab);
+    QListWidget* listWidget = new QListWidget(newTab);
+    listWidget->setObjectName("playlistListWidget"); // این خط را اضافه یا اصلاح کنید
+    layout->addWidget(listWidget);
+    newTab->setLayout(layout);
+    ui->tab_playlist->addTab(newTab, name);
+    ui->tab_playlist->setCurrentWidget(newTab);
 
-    // می‌تونیم یک layout برای صفحه تب تنظیم کنیم تا widget ها داخلش جا بگیرند
-    QVBoxLayout* layout = new QVBoxLayout(newtab);
+    // اتصال سیگنال double-click
+    connect(listWidget, &QListWidget::itemDoubleClicked, this, &home::play_list_play);
 
-    // ساختن QListWidget
-    QListWidget* new_list = new QListWidget();
-
-    // (اختیاری ولی بسیار مفید) ست کردن objectName برای پیدا کردن راحت‌تر
-    new_list->setObjectName("playlistListWidget");
-
-    // اضافه کردن لیست به layout
-    layout->addWidget(new_list);
-
-    // اضافه کردن تب به QTabWidget
-    ui->tab_playlist->addTab(newtab, name);
+    // اعمال delegate
+    listWidget->setItemDelegate(new style_playlistitem(listWidget));
 }
 
 void home::add_to_playlist(int tabIndex, const QString& itemText)
@@ -552,7 +527,7 @@ void home::on_pushButton_5_clicked()
         play_list_play(listWidget->currentItem());
     }
     else if(!is_list && is_queue){//queue
-
+        QListWidgetItem* item_to_remove = listWidget->currentItem();
         int cur_row = listWidget->currentRow();
         if (cur_row < 0) { // If no item is current (e.g., first play of queue)
             if (listWidget->count() > 0) {
@@ -588,6 +563,22 @@ void home::on_pushButton_5_clicked()
             player->stop();
             ui->label_4->setText(""); ui->artist->setText(""); ui->title->setText("");
             ui->infoMusic->setText(""); ui->progressBar->setValue(0);
+        }
+
+        if (item_to_remove) {
+            int old_row_to_remove = -1;
+            for (int i = 0; i < listWidget->count(); ++i) {
+                if (listWidget->item(i) == item_to_remove) {
+                    old_row_to_remove = i;
+                    break;
+                }
+            }
+            if (old_row_to_remove != -1) {
+                QListWidgetItem* takenItem = listWidget->takeItem(old_row_to_remove);
+                if (takenItem) {
+                    delete takenItem;
+                }
+            }
         }
 
         if (!listWidget || listWidget->count() == 0) {
@@ -803,22 +794,20 @@ void home::on_pushButton_clicked()
 
 void home::creat_queue(const QString &name)
 {
-    QWidget* newtab = new QWidget();
+    QWidget* newTab = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(newTab);
+    QListWidget* listWidget = new QListWidget(newTab);
+    listWidget->setObjectName("queueListWidget"); // این خط را اضافه یا اصلاح کنید (یا همان "playlistListWidget" اگر می‌خواهید یکسان باشند)
+    layout->addWidget(listWidget);
+    newTab->setLayout(layout);
+    ui->tab_queue->addTab(newTab, name);
+    ui->tab_queue->setCurrentWidget(newTab);
 
-    // می‌تونیم یک layout برای صفحه تب تنظیم کنیم تا widget ها داخلش جا بگیرند
-    QVBoxLayout* layout = new QVBoxLayout(newtab);
+    // اتصال سیگنال double-click
+    connect(listWidget, &QListWidget::itemDoubleClicked, this, &home::play_queue);
 
-    // ساختن QListWidget
-    QListWidget* new_list = new QListWidget();
-
-    // (اختیاری ولی بسیار مفید) ست کردن objectName برای پیدا کردن راحت‌تر
-    new_list->setObjectName("playlistListWidget");
-
-    // اضافه کردن لیست به layout
-    layout->addWidget(new_list);
-
-    // اضافه کردن تب به QTabWidget
-    ui->tab_queue->addTab(newtab, name);
+    // اعمال delegate
+    listWidget->setItemDelegate(new style_playlistitem(listWidget));
 }
 
 void home::add_to_queue(int tabIndex, const QString& itemText){
@@ -915,4 +904,512 @@ void home::updatePlayButtonIcon()
     } else {
         ui->pushButton_4->setIcon(QIcon(":/JukeBox/Icon/1.png")); // Play icon
     }
+}
+
+// In home.cpp
+void home::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+    if (status == QMediaPlayer::EndOfMedia) {
+        qDebug() << "End of Media detected. Repeat mode: " << repeat;
+
+        switch (repeat) {
+        case disable: // Disable (default): Stop playback
+            player->stop();
+            // Clear info and reset UI
+            ui->label_4->setText("");
+            ui->artist->setText("");
+            ui->title->setText("");
+            ui->infoMusic->setText("");
+            ui->progressBar->setValue(0);
+            updatePlayButtonIcon(); // Ensure play button shows 'play'
+            break;
+        case once: // Once: Replay the current song
+            player->play(); // Will restart from the beginning
+            break;
+        case list: // List: Play the next song in the current list/queue
+            // This is where you call your 'next song' logic
+            if (is_list) { // Currently playing from a playlist
+                if (listWidget && listWidget->count() > 0) {
+                    int currentRow = listWidget->currentRow();
+                    int nextRow = (currentRow >= listWidget->count() - 1) ? 0 : currentRow + 1;
+                    listWidget->setCurrentRow(nextRow);
+                    play_list_play(listWidget->currentItem());
+                } else {
+                    // No more items in playlist, or list is empty, stop
+                    player->stop();
+                    ui->label_4->setText(""); ui->artist->setText(""); ui->title->setText("");
+                    ui->infoMusic->setText(""); ui->progressBar->setValue(0);
+                    updatePlayButtonIcon();
+                }
+            } else if (is_queue) { // Currently playing from a queue
+                if (listWidget && listWidget->count() > 0) {
+                    QListWidgetItem* item_to_remove = listWidget->currentItem();
+                    int currentRow = listWidget->currentRow();
+
+                    // Remove the finished song from the queue (as it's played)
+                    if (item_to_remove) {
+                        int old_row_to_remove = -1;
+                        for (int i = 0; i < listWidget->count(); ++i) {
+                            if (listWidget->item(i) == item_to_remove) {
+                                old_row_to_remove = i;
+                                break;
+                            }
+                        }
+                        if (old_row_to_remove != -1) {
+                            QListWidgetItem* takenItem = listWidget->takeItem(old_row_to_remove);
+                            if (takenItem) {
+                                delete takenItem;
+                            }
+                        }
+                    }
+
+                    // After removing, get the next item (which will be at the current row if previous was deleted)
+                    if (listWidget->count() > 0) {
+                        // If the list is not empty, ensure a valid row is selected for next play
+                        // If the last item was removed and no loop-back, set current row to 0
+                        if (currentRow >= listWidget->count()) { // If the last item was played and removed
+                            listWidget->setCurrentRow(0);
+                        } else { // Otherwise, the next item is now at the current index
+                            listWidget->setCurrentRow(currentRow);
+                        }
+                        play_queue(listWidget->currentItem());
+                    } else {
+                        // Queue is now empty, clean up and stop
+                        player->stop();
+                        ui->label_4->setText(""); ui->artist->setText(""); ui->title->setText("");
+                        ui->infoMusic->setText(""); ui->progressBar->setValue(0);
+                        updatePlayButtonIcon();
+
+                        // Remove the empty queue tab
+                        int currentQueueTabIndex = ui->tab_queue->indexOf(tabWidget);
+                        if (currentQueueTabIndex != -1) {
+                            QWidget* widgetToDelete = ui->tab_queue->widget(currentQueueTabIndex);
+                            ui->tab_queue->removeTab(currentQueueTabIndex);
+                            if (widgetToDelete) {
+                                delete widgetToDelete;
+                            }
+                        }
+                        is_queue = false; // Transition out of queue mode
+                        listWidget = nullptr; // Clear references
+                        tabWidget = nullptr;  // Clear references
+                    }
+                } else {
+                    // Queue is empty, stop
+                    player->stop();
+                    ui->label_4->setText(""); ui->artist->setText(""); ui->title->setText("");
+                    ui->infoMusic->setText(""); ui->progressBar->setValue(0);
+                    updatePlayButtonIcon();
+                }
+            } else { // Playing from main table
+                if (ui->tableMusic->rowCount() > 0) {
+                    int currentRow = ui->tableMusic->currentRow();
+                    int nextRow = (currentRow >= ui->tableMusic->rowCount() - 1) ? 0 : currentRow + 1;
+                    ui->tableMusic->setCurrentCell(nextRow, ui->tableMusic->currentColumn());
+                    playMusic(ui->tableMusic->item(nextRow, c_address)->text());
+                } else {
+                    // No more items in main table, stop
+                    player->stop();
+                    ui->label_4->setText(""); ui->artist->setText(""); ui->title->setText("");
+                    ui->infoMusic->setText(""); ui->progressBar->setValue(0);
+                    updatePlayButtonIcon();
+                }
+            }
+            break;
+        }
+    }
+}
+
+void home::on_pushButton_6_clicked()
+{
+    if (repeat == disable){
+        repeat = once;
+        ui->pushButton_6->setIcon(QIcon(":/JukeBox/Icon/26.png"));
+        return;
+    }
+    else if (repeat == once){
+        repeat = list;
+        ui->pushButton_6->setIcon(QIcon(":/JukeBox/Icon/27.png"));
+        return;
+    }
+    else if (repeat == list){
+        repeat = disable;
+        ui->pushButton_6->setIcon(QIcon(":/JukeBox/Icon/28.png"));
+        return;
+    }
+}
+
+void home::updateVisualizer()
+{
+    QSize labelSize = ui->moje->size();
+    if (labelSize.isEmpty()) {
+        return;
+    }
+
+    QPixmap pixmap(labelSize);
+    pixmap.fill(Qt::black); // Fill background with black
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPen pen(currentVisualizerColor);
+    pen.setWidth(2);
+    painter.setPen(pen);
+
+    int barWidth = labelSize.width() / visualizerBarCount;
+    if (barWidth == 0) barWidth = 1;
+
+    if (player->playbackState() == QMediaPlayer::PlayingState) {
+        if (waveModel == false) { // Model 1: Vertical bars (existing)
+            for (int i = 0; i < visualizerBarCount; ++i) {
+                int barHeight = rand() % visualizerMaxHeight + 1;
+                int x = i * barWidth + (barWidth / 2);
+                painter.drawLine(x, labelSize.height(), x, labelSize.height() - barHeight);
+            }
+        } else { // Model 2: Waveform similar to the provided image (Simplified approach)
+            QVector<QPoint> points;
+            int centerY = labelSize.height() / 2;
+            double maxAmplitude = visualizerMaxHeight / 2.0; // Max deviation from center
+
+            // تعداد "پیک" یا نقاطی که می خواهیم در عرض ویژوالایزر داشته باشیم
+            int numPeaks = visualizerBarCount * 2; // مثلا 2 برابر تعداد میله ها
+
+            for (int i = 0; i < numPeaks; ++i) {
+                double x_pos = (double)i / (numPeaks - 1) * labelSize.width();
+
+                // Generate a "peak" height for this segment
+                // A random value for the peak, simulating audio variations
+                double peakHeightRatio = (rand() % 100) / 100.0; // 0.0 to 1.0
+                double currentAmplitude = maxAmplitude * (0.3 + peakHeightRatio * 0.7); // Varies from 30% to 100% of max
+
+                // Use an inverted V-shape or triangle for each peak/segment
+                // This creates the spiky look from the image.
+                // We'll draw two points per segment: one for the positive peak, one for the negative.
+
+                // Top part of the wave
+                int y_top = (int)(centerY - currentAmplitude);
+                points.append(QPoint(x_pos, y_top));
+
+                // Bottom part of the wave (symmetrical to top)
+                int y_bottom = (int)(centerY + currentAmplitude);
+                points.append(QPoint(x_pos, y_bottom));
+            }
+
+            // Draw the polyline, connecting all calculated points.
+            // Note: This simple approach draws vertical lines between top and bottom points for each peak.
+            // If you want a continuous line that goes up and down,
+            // you'd need to connect (x_i, y_top_i) to (x_i+1, y_bottom_i) and then to (x_i+1, y_top_i+1)
+            // For now, let's connect the top points and bottom points separately to create two lines.
+
+            // To get a single continuous wave like the image, a slightly different approach:
+            QVector<QPoint> topWavePoints;
+            QVector<QPoint> bottomWavePoints;
+
+            for (int i = 0; i < numPeaks; ++i) {
+                double x_pos = (double)i / (numPeaks - 1) * labelSize.width();
+                double peakHeightRatio = (rand() % 100) / 100.0;
+                double currentAmplitude = maxAmplitude * (0.3 + peakHeightRatio * 0.7);
+
+                int y_top = (int)(centerY - currentAmplitude);
+                int y_bottom = (int)(centerY + currentAmplitude);
+
+                topWavePoints.append(QPoint(x_pos, y_top));
+                bottomWavePoints.append(QPoint(x_pos, y_bottom));
+            }
+
+            // Draw the top wave
+            if (topWavePoints.size() > 1) {
+                painter.drawPolyline(topWavePoints.data(), topWavePoints.size());
+            }
+
+            // Draw the bottom wave (mirror of top wave)
+            if (bottomWavePoints.size() > 1) {
+                painter.drawPolyline(bottomWavePoints.data(), bottomWavePoints.size());
+            }
+        }
+    } else { // If not playing, display fixed state for the *current* waveModel
+        int fixedHeight = visualizerMaxHeight / 3;
+        if (waveModel == false) { // Fixed bars
+            for (int i = 0; i < visualizerBarCount; ++i) {
+                int x = i * barWidth + (barWidth / 2);
+                painter.drawLine(x, labelSize.height(), x, labelSize.height() - fixedHeight);
+            }
+        } else { // Fixed Waveform (simpler, less dynamic when stopped, similar to image in resting state)
+            QVector<QPoint> topWavePoints;
+            QVector<QPoint> bottomWavePoints;
+            int centerY = labelSize.height() / 2;
+            double fixedAmplitude = visualizerMaxHeight / 2.0 * 0.2; // Smaller amplitude when stopped
+            int numPoints = labelSize.width(); // Use more points for a smooth line
+
+            for (int i = 0; i < numPoints; ++i) {
+                double x_pos = (double)i / (numPoints - 1) * labelSize.width();
+                double value = qSin(x_pos * 0.05); // A simple sine wave for the fixed state
+
+                int y_top = (int)(centerY - value * fixedAmplitude);
+                int y_bottom = (int)(centerY + value * fixedAmplitude);
+
+                topWavePoints.append(QPoint(x_pos, y_top));
+                bottomWavePoints.append(QPoint(x_pos, y_bottom));
+            }
+
+            if (topWavePoints.size() > 1) {
+                painter.drawPolyline(topWavePoints.data(), topWavePoints.size());
+            }
+            if (bottomWavePoints.size() > 1) {
+                painter.drawPolyline(bottomWavePoints.data(), bottomWavePoints.size());
+            }
+        }
+    }
+
+    ui->moje->setPixmap(pixmap);
+}
+
+void home::on_moje_clicked()
+{
+    waveModel = !waveModel;
+    updateVisualizer();
+}
+
+
+bool home::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == ui->moje && event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+            on_moje_clicked();
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void home::saveUserData(const QString& username)
+{
+    if (username.isEmpty()) {
+        qDebug() << "Cannot save data: Username is empty.";
+        QMessageBox::warning(this, "خطا در ذخیره", "نام کاربری وارد نشده است.");
+        return;
+    }
+
+    QJsonObject userData;
+    userData["username"] = username;
+
+    // ذخیره پلی‌لیست‌ها
+    QJsonArray playlistsArray;
+    for (int i = 0; i < ui->tab_playlist->count(); ++i) {
+        QJsonObject playlistObject;
+        QString tabName = ui->tab_playlist->tabText(i);
+        playlistObject["name"] = tabName;
+
+        QWidget* tabWidget = ui->tab_playlist->widget(i);
+        // اینجا باید مطمئن شوید که QListWidget شما objectName مناسبی دارد
+        QListWidget* listWidget = tabWidget->findChild<QListWidget*>("playlistListWidget"); // فرض شده objectName برای QListWidgetها "playlistListWidget" است
+        if (listWidget) {
+            QJsonArray musicFilesArray;
+            for (int j = 0; j < listWidget->count(); ++j) {
+                QListWidgetItem* item = listWidget->item(j);
+                QString filePath = item->data(Qt::UserRole + 1).toString(); // مسیر فایل را از Qt::UserRole + 1 می‌خواند
+                musicFilesArray.append(filePath);
+            }
+            playlistObject["musicFiles"] = musicFilesArray;
+        }
+        playlistsArray.append(playlistObject);
+    }
+    userData["playlists"] = playlistsArray;
+
+    // ذخیره صف‌های پخش
+    QJsonArray queuesArray;
+    for (int i = 0; i < ui->tab_queue->count(); ++i) {
+        QJsonObject queueObject;
+        QString tabName = ui->tab_queue->tabText(i);
+        queueObject["name"] = tabName;
+
+        QWidget* tabWidget = ui->tab_queue->widget(i);
+        // اینجا هم باید مطمئن شوید که QListWidget شما objectName مناسبی دارد
+        QListWidget* listWidget = tabWidget->findChild<QListWidget*>("queueListWidget"); // فرض شده objectName برای QListWidgetهای صف "queueListWidget" است. یا همان "playlistListWidget" اگر منطق یکسان است.
+        if (listWidget) {
+            QJsonArray musicFilesArray;
+            for (int j = 0; j < listWidget->count(); ++j) {
+                QListWidgetItem* item = listWidget->item(j);
+                QString filePath = item->data(Qt::UserRole + 1).toString();
+                musicFilesArray.append(filePath);
+            }
+            queueObject["musicFiles"] = musicFilesArray;
+        }
+        queuesArray.append(queueObject);
+    }
+    userData["queues"] = queuesArray;
+
+    QJsonDocument saveDoc(userData);
+
+    // تعیین مسیر ذخیره فایل (مسیر استاندارد برای داده‌های برنامه)
+    QString appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(appDataLocation);
+    if (!dir.exists()) {
+        dir.mkpath("."); // ایجاد دایرکتوری در صورت عدم وجود
+    }
+
+    QString fileName = appDataLocation + "/" + username + "_music_data.json";
+    QFile saveFile(fileName);
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file %s for writing: %s", qPrintable(fileName), qPrintable(saveFile.errorString()));
+        QMessageBox::warning(this, "خطا در ذخیره", "امکان ذخیره اطلاعات کاربر وجود ندارد.");
+        return;
+    }
+
+    saveFile.write(saveDoc.toJson(QJsonDocument::Indented)); // ذخیره با فرمت خواناتر
+    saveFile.close();
+    qDebug() << "User data saved to:" << fileName;
+    QMessageBox::information(this, "ذخیره موفق", "اطلاعات کاربر با موفقیت ذخیره شد!");
+}
+
+void home::loadUserData(const QString& username)
+{
+    if (username.isEmpty()) {
+        qDebug() << "Cannot load data: Username is empty.";
+        QMessageBox::warning(this, "خطا در بارگذاری", "نام کاربری وارد نشده است.");
+        return;
+    }
+
+    QString appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QString fileName = appDataLocation + "/" + username + "_music_data.json";
+    QFile loadFile(fileName);
+
+    if (!loadFile.exists()) {
+        qDebug() << "No saved data found for user:" << username;
+        QMessageBox::information(this, "بارگذاری", "هیچ اطلاعات ذخیره شده‌ای برای این کاربر پیدا نشد. تنظیمات پیش‌فرض اعمال می‌شود.");
+        // می‌توانید اینجا پلی‌لیست‌ها و صف‌های پیش‌فرض را ایجاد کنید
+        return;
+    }
+
+    if (!loadFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open load file %s for reading: %s", qPrintable(fileName), qPrintable(loadFile.errorString()));
+        QMessageBox::warning(this, "خطا در بارگذاری", "امکان بارگذاری اطلاعات کاربر وجود ندارد.");
+        return;
+    }
+
+    QByteArray savedData = loadFile.readAll();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(savedData));
+
+    if (loadDoc.isNull() || !loadDoc.isObject()) {
+        qWarning() << "Failed to parse JSON document or it's not an object.";
+        QMessageBox::warning(this, "خطا در بارگذاری", "فرمت فایل ذخیره شده نامعتبر است.");
+        loadFile.close();
+        return;
+    }
+
+    QJsonObject userData = loadDoc.object();
+
+    // پاک کردن پلی‌لیست‌ها و صف‌های فعلی قبل از بارگذاری
+    // این مرحله مهم است تا اطلاعات قبلی با اطلاعات ذخیره شده جایگزین شوند
+    while (ui->tab_playlist->count() > 0) {
+        delete ui->tab_playlist->widget(0);
+        ui->tab_playlist->removeTab(0);
+    }
+    while (ui->tab_queue->count() > 0) {
+        delete ui->tab_queue->widget(0);
+        ui->tab_queue->removeTab(0);
+    }
+
+
+    // بارگذاری پلی‌لیست‌ها
+    QJsonArray playlistsArray = userData["playlists"].toArray();
+    for (const QJsonValue &playlistValue : playlistsArray) {
+        QJsonObject playlistObject = playlistValue.toObject();
+        QString playlistName = playlistObject["name"].toString();
+        QJsonArray musicFilesArray = playlistObject["musicFiles"].toArray();
+
+        // ایجاد تب پلی‌لیست و QListWidget مربوطه
+        creat_list(playlistName); // این تابع باید تب و QListWidget را ایجاد کند و objectName را تنظیم کند
+        // پیدا کردن QListWidget که تازه ایجاد شده است
+        QWidget* newTabWidget = ui->tab_playlist->widget(ui->tab_playlist->count() - 1);
+        QListWidget* currentListWidget = newTabWidget->findChild<QListWidget*>("playlistListWidget");
+
+        if (currentListWidget) {
+            // اطمینان از اتصال سیگنال itemDoubleClicked
+            disconnect(currentListWidget, &QListWidget::itemDoubleClicked, this, &home::play_list_play);
+            connect(currentListWidget, &QListWidget::itemDoubleClicked, this, &home::play_list_play);
+            currentListWidget->setItemDelegate(new style_playlistitem(currentListWidget)); // اعمال Delegate
+
+            for (const QJsonValue &filePathValue : musicFilesArray) {
+                QString filePath = filePathValue.toString();
+                // اضافه کردن آهنگ به پلی‌لیست
+                QListWidgetItem* item = new QListWidgetItem();
+                bool foundInTable = false;
+                for (int i = 0; i < ui->tableMusic->rowCount(); ++i) {
+                    // مسیر فایل را از tableMusic با c_address مقایسه می‌کند
+                    if (filePath == ui->tableMusic->item(i, c_address)->text()) {
+                        QString title = ui->tableMusic->item(i, c_title)->text();
+                        QString format = ui->tableMusic->item(i, c_format)->text();
+                        QString size = ui->tableMusic->item(i, c_size)->text();
+                        QString length = ui->tableMusic->item(i, c_length)->text();
+
+                        item->setText(title);
+                        item->setData(Qt::UserRole, format + " :: " + size + ", " + length);
+                        item->setData(Qt::UserRole + 1, filePath); // مسیر فایل را در UserRole + 1 ذخیره می‌کند
+                        foundInTable = true;
+                        break;
+                    }
+                }
+                if (foundInTable) {
+                    currentListWidget->addItem(item);
+                } else {
+                    // اگر فایل در tableMusic پیدا نشد، می‌توانید آن را به صورت "Missing File" یا مشابه اضافه کنید
+                    // یا کلاً اضافه نکنید.
+                    qWarning() << "Music file not found in tableMusic:" << filePath;
+                    delete item; // حذف آیتم اگر استفاده نشود
+                }
+            }
+        } else {
+            qWarning() << "Could not find QListWidget in playlist tab:" << playlistName;
+        }
+    }
+
+    // بارگذاری صف‌های پخش (مشابه پلی‌لیست‌ها)
+    QJsonArray queuesArray = userData["queues"].toArray();
+    for (const QJsonValue &queueValue : queuesArray) {
+        QJsonObject queueObject = queueValue.toObject();
+        QString queueName = queueObject["name"].toString();
+        QJsonArray musicFilesArray = queueObject["musicFiles"].toArray();
+
+        creat_queue(queueName); // این تابع باید تب و QListWidget را ایجاد کند
+        QWidget* newTabWidget = ui->tab_queue->widget(ui->tab_queue->count() - 1);
+        QListWidget* currentListWidget = newTabWidget->findChild<QListWidget*>("queueListWidget"); // یا "playlistListWidget"
+
+        if (currentListWidget) {
+            disconnect(currentListWidget, &QListWidget::itemDoubleClicked, this, &home::play_queue);
+            connect(currentListWidget, &QListWidget::itemDoubleClicked, this, &home::play_queue);
+            currentListWidget->setItemDelegate(new style_playlistitem(currentListWidget)); // اعمال Delegate
+
+            for (const QJsonValue &filePathValue : musicFilesArray) {
+                QString filePath = filePathValue.toString();
+                QListWidgetItem* item = new QListWidgetItem();
+                bool foundInTable = false;
+                for (int i = 0; i < ui->tableMusic->rowCount(); ++i) {
+                    if (filePath == ui->tableMusic->item(i, c_address)->text()) {
+                        QString title = ui->tableMusic->item(i, c_title)->text();
+                        QString format = ui->tableMusic->item(i, c_format)->text();
+                        QString size = ui->tableMusic->item(i, c_size)->text();
+                        QString length = ui->tableMusic->item(i, c_length)->text();
+
+                        item->setText(title);
+                        item->setData(Qt::UserRole, format + " :: " + size + ", " + length);
+                        item->setData(Qt::UserRole + 1, filePath);
+                        foundInTable = true;
+                        break;
+                    }
+                }
+                if (foundInTable) {
+                    currentListWidget->addItem(item);
+                } else {
+                    qWarning() << "Music file not found in tableMusic (for queue):" << filePath;
+                    delete item;
+                }
+            }
+        } else {
+            qWarning() << "Could not find QListWidget in queue tab:" << queueName;
+        }
+    }
+    loadFile.close();
+    qDebug() << "User data loaded for:" << username;
+    QMessageBox::information(this, "بارگذاری موفق", "اطلاعات کاربر با موفقیت بارگذاری شد!");
 }
