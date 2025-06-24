@@ -30,5 +30,6 @@
         <file>Icon/24.png</file>
 	<file>Icon/left.png</file>
 	<file>Icon/right.png</file>
+    <file>Icon/30.png</file>
     </qresource>
 </RCC>

@@ -6,7 +6,6 @@ User::User(QWidget *parent)
     , ui(new Ui::User)
 {
     ui->setupUi(this);
-    m_player = new home();
 }
 
 User::User(QString _name, QString _user_name, QString _email, QString _password, QWidget *parent)
@@ -61,9 +60,4 @@ void User::set_password(QString _password)
 User::~User()
 {
     delete ui;
-}
-
-home *User::get_m_player()
-{
-    return m_player;
 }

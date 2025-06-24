@@ -13,9 +13,12 @@
 #include <QFileDialog>
 #include <QAudioOutput>
 #include <QMediaPlayer>
+#include <QPixmap>
+#include <QImage>
 #include <QScreen>
 #include <QMenu>
 #include "new_playlist.h"
+#include "new_queue.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,12 +31,12 @@ class home : public QMainWindow
     Q_OBJECT
 
 public:
-    home(QWidget *parent = nullptr);
     ~home();
     void playMusic(const QString &filePath);
-
+    static home* single();
 
     void add_to_playlist(int tabIndex, const QString& itemText);
+    void add_to_queue(int tabIndex, const QString &itemText);
 private slots:
     void onPositionChanged(qint64 position);
 
@@ -67,15 +70,29 @@ private slots:
     void on_pushButton_9_clicked();
 
     void play_list_play(QListWidgetItem* item);
+    void on_pushButton_7_clicked();
+
+    void on_pushButton_clicked();
+
+    void creat_queue(const QString &name);
+    void play_queue(QListWidgetItem *item);
 private:
+    home(QWidget *parent = nullptr);
+    static home* address;
+    QListWidget* listWidget = nullptr;
+    int tabindex = -1;
+    QWidget* tabWidget = nullptr;
     Ui::home *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
+    bool is_list = false;
+    bool is_shuffle = false;
+    bool is_queue = false;
     void extractMetadata(const QString &filePath, int row);
     void set_progressbar(int parts);
     void tab_text(QString name);
-
     void set_cover();
     void set_info();
+    void updatePlayButtonIcon();
 };
 #endif // home_H

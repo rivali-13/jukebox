@@ -24,14 +24,12 @@ public:
     void set_email(QString _email);
     void set_password(QString _password);
     ~User();
-    home* get_m_player();
 private:
     Ui::User *ui;
     QString name;
     QString user_name;
     QString email;
     QString password;
-    home* m_player;
 };
 
 #endif // USER_H

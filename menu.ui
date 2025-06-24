@@ -41,7 +41,7 @@ background-color: rgb(255, 255, 255);
 color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>=== sign in ===</string>
+       <string>=== sign up ===</string>
       </property>
      </widget>
     </item>
