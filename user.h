@@ -2,7 +2,6 @@
 #define USER_H
 
 #include <QWidget>
-#include "home.h"
 
 namespace Ui {
 class User;

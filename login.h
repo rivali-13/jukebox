@@ -1,31 +1,28 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
-#include <QDialog>
+#include <QObject>
 #include "user.h"
+class Menu;
+class User;
 
-namespace Ui {
-class Login;
-}
-
-class Login : public QDialog
+class Login: public QObject
 {
     Q_OBJECT
-
 public:
-    explicit Login(QWidget *parent = nullptr);
-    ~Login();
+    Login(Menu* _menu,  QObject* parent = nullptr);
     bool checkCredentials(const QString &username, const QString &password);
     User& getCurrentUser();
-private slots:
-    void on_buttonBox_accepted();
 
-    void on_pushButton_clicked();
+public slots:
+    void doLogin();
+
 
 private:
-    Ui::Login *ui;
+    Menu* menu;
     User currentUser;
     QString twoWayEncrypt(const QString &input);
+
 };
 
 #endif // LOGIN_H

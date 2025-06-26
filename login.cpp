@@ -1,23 +1,13 @@
 #include "login.h"
-#include "ui_login.h"
+#include "ui_menu.h"
+#include "menu.h"
 #include <QMessageBox>
 #include <functional>
 #include <QFile>
 #include "panel_user.h"
-#include "forget.h"
 
-Login::Login(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::Login)
-    , currentUser(nullptr)
-{
-    ui->setupUi(this);
-    ui->lineEdit->setFocus();
-}
+Login::Login(Menu* _menu, QObject* parent): QObject(parent), menu(_menu){
 
-Login::~Login()
-{
-    delete ui;
 }
 
 QString Login::twoWayEncrypt(const QString& input) {
@@ -25,24 +15,32 @@ QString Login::twoWayEncrypt(const QString& input) {
 }
 
 
-void Login::on_buttonBox_accepted()
+void Login::doLogin()
 {
-    QString user_name = ui->lineEdit->text();
-    QString password = ui->lineEdit_2->text();
+    menu->ui->errLogUser->setText("");
+    menu->ui->errLogPass->setText("");
 
-    if (user_name.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, "Error", "Please enter both username and password");
+    QString user_name = menu->ui->logUsername->text();
+    QString password = menu->ui->logPassword->text();
+
+    if (user_name.isEmpty()) {
+        //QMessageBox::warning(menu, "Error", "Please enter both username and password");
+        menu->ui->errLogUser->setText("لطفا نام کاربری خود را وارد کنید");
+        return;
+    }
+    else if(password.isEmpty()){
+        menu->ui->errLogPass->setText("لطفا رمز عبور خود را وارد کنید");
         return;
     }
 
     if (checkCredentials(user_name, password)) {
-        QMessageBox::information(this, "Success", "Login successful!");
+        QMessageBox::information(menu, "Success", "Login successful!");
         Panel_User *p = new Panel_User();
         p->set_curuser(getCurrentUser());
         p->show();
-        this->parentWidget()->close();
+        menu->close();
     } else {
-        QMessageBox::critical(this, "Error", "Invalid username or password");
+        // QMessageBox::critical(menu, "Error", "Invalid username or password");
     }
 }
 
@@ -50,7 +48,7 @@ bool Login::checkCredentials(const QString& username, const QString& password)
 {
     QFile file("users.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Error", "Could not open users file");
+        // QMessageBox::critical(menu, "Error", "Could not open users file");
         return false;
     }
 
@@ -66,19 +64,24 @@ bool Login::checkCredentials(const QString& username, const QString& password)
         QString line = file.readLine().trimmed();
         QStringList fields = line.split(",");
 
-        if (fields.size() >= 4 &&
-            fields[0] == encodedUsername &&
-            fields[2] == hashedPassword) {
+        if (fields.size() >= 4 && fields[0] == encodedUsername ){
 
-            currentUser.set_user_name(fields[0]);
-            currentUser.set_name(fields[1]);
-            currentUser.set_password(fields[2]);
-            currentUser.set_email(fields[3]);
+            if (fields[2] == hashedPassword){
+                currentUser.set_user_name(fields[0]);
+                currentUser.set_name(fields[1]);
+                currentUser.set_password(fields[2]);
+                currentUser.set_email(fields[3]);
 
-            file.close();
-            return true;
+                file.close();
+                return true;
+            }
+            else {
+                menu->ui->errLogPass->setText("رمز عبور نادرست است");
+                return false;
+            }
         }
     }
+    menu->ui->errLogUser->setText("کاربری با این نام پیدا نشد");
 
     file.close();
     return false;
@@ -89,9 +92,4 @@ User& Login::getCurrentUser()
     return currentUser;
 }
 
-void Login::on_pushButton_clicked()
-{
-    Forget* f = new Forget (this);
-    f->show();
-}
 

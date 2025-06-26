@@ -9,7 +9,7 @@ SOURCES += \
     login.cpp \
     new_playlist.cpp \
     new_queue.cpp \
-    sign_in.cpp \
+    sign_up.cpp \
     user.cpp \
     panel_user.cpp \
     info.cpp \
@@ -23,7 +23,7 @@ HEADERS += \
     login.h \
     new_playlist.h \
     new_queue.h \
-    sign_in.h \
+    sign_up.h \
     user.h \
     panel_user.h \
     info.h \
@@ -34,10 +34,8 @@ HEADERS += \
 FORMS += \
     forget.ui \
     menu.ui \
-    login.ui \
     new_playlist.ui \
     new_queue.ui \
-    sign_in.ui \
     user.ui \
     panel_user.ui \
     home.ui \
