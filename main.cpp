@@ -6,10 +6,10 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Menu w;
-    // home* m = home::single();
+    // Menu w;
+    home* m = home::single();
 
-    w.show();
+    m->show();
     //Video v;
     //v.show();
 

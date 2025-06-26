@@ -73,6 +73,12 @@ home::home(QWidget *parent)
         }
     });
 
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+        this, [this]() {
+        QString currentUsername = "testUser";
+        player->stop();
+        saveUserData(currentUsername);
+    });
 
     // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
@@ -82,19 +88,17 @@ home::home(QWidget *parent)
 
 
     ui->tableMusic->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableMusic, &QTableWidget::customContextMenuRequested,
-            this, &home::showContextMenu);
+    connect(ui->tableMusic, &QTableWidget::customContextMenuRequested, this, &home::showContextMenu);
 
 
     QString username = "testUser"; // مثال: از یک دیالوگ یا تنظیمات بخوانید
     loadUserData(username);
+
 }
 
 
 home::~home()
 {
-    QString username = "testUser"; // همان نام کاربری که برای بارگذاری استفاده شد
-    saveUserData(username);
     delete ui;
     delete player;
     delete audioOutput;
@@ -1193,6 +1197,23 @@ void home::saveUserData(const QString& username)
     QJsonObject userData;
     userData["username"] = username;
 
+    // ذخیده table_music
+    QJsonArray musicTableFilePathsArray;
+    if (ui->tableMusic) { // اطمینان از اینکه music_table وجود دارد
+        for (int row = 0; row < ui->tableMusic->rowCount(); ++row) {
+            // فرض می‌کنیم که آدرس فایل در ستون 0 (اولین ستون) است.
+            QTableWidgetItem* filePathItem = ui->tableMusic->item(row, c_address); // ستون آدرس فایل
+
+            if (filePathItem) {
+                musicTableFilePathsArray.append(filePathItem->text());
+            }
+        }
+    }
+    // آدرس‌های فایل را با کلید "music_file_paths" در JSON اصلی ذخیره می‌کنیم
+    userData["music_file_paths"] = musicTableFilePathsArray;
+    // --- پایان ذخیره اطلاعات QTableWidget music_table ---
+
+
     // ذخیره پلی‌لیست‌ها
     QJsonArray playlistsArray;
     for (int i = 0; i < ui->tab_playlist->count(); ++i) {
@@ -1299,17 +1320,26 @@ void home::loadUserData(const QString& username)
 
     QJsonObject userData = loadDoc.object();
 
-    // پاک کردن پلی‌لیست‌ها و صف‌های فعلی قبل از بارگذاری
-    // این مرحله مهم است تا اطلاعات قبلی با اطلاعات ذخیره شده جایگزین شوند
-    while (ui->tab_playlist->count() > 0) {
-        delete ui->tab_playlist->widget(0);
-        ui->tab_playlist->removeTab(0);
-    }
-    while (ui->tab_queue->count() > 0) {
-        delete ui->tab_queue->widget(0);
-        ui->tab_queue->removeTab(0);
-    }
+    // بارگذاری table_music
+    QJsonArray tableArray = userData["music_file_paths"].toArray();
+    int cur_row;
+    ui->tableMusic->setRowCount(0);
+    for (const QJsonValue &filePathValue : tableArray) {
+        QString filePath = filePathValue.toString();
+        QFileInfo fileInfo(filePath);
 
+        QString fileName = fileInfo.completeBaseName();
+        QString format = fileInfo.suffix().toUpper();
+        QString size = QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 2) + "MB";
+        cur_row = ui->tableMusic->rowCount();
+        ui->tableMusic->insertRow(cur_row);
+        ui->tableMusic->setItem(cur_row, c_address, new QTableWidgetItem(filePath));
+        ui->tableMusic->setItem(cur_row, c_format, new QTableWidgetItem(format));
+        ui->tableMusic->setItem(cur_row, c_size, new QTableWidgetItem(size));
+        ui->tableMusic->setItem(cur_row, c_address, new QTableWidgetItem(filePath));
+        extractMetadata(filePath, cur_row);
+    }
+    ui->tableMusic->resizeColumnsToContents();
 
     // بارگذاری پلی‌لیست‌ها
     QJsonArray playlistsArray = userData["playlists"].toArray();
