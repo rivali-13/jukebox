@@ -15,7 +15,10 @@ SOURCES += \
     info.cpp \
     home.cpp \
     style_playlistitem.cpp \
-    video.cpp
+    video.cpp \
+    serverdialog.cpp\
+    musicnetwork.cpp
+
 
 HEADERS += \
     forget.h \
@@ -29,7 +32,10 @@ HEADERS += \
     info.h \
 	home.h \
     style_playlistitem.h \
-    video.h
+    video.h\
+    serverdialog.h\
+    musicnetwork.h
+
 
 FORMS += \
     forget.ui \
@@ -40,6 +46,8 @@ FORMS += \
     panel_user.ui \
     home.ui \
     info.ui  \
-    video.ui
+    video.ui\
+    serverdialog.ui
+
 RESOURCES += \
         resources.qrc

@@ -3,6 +3,7 @@
 
 #include "ui_home.h"
 #include "style_playlistitem.h"
+#include "serverdialog.h"
 #include <QMainWindow>
 #include <QString>
 #include <QDir>
@@ -12,17 +13,17 @@
 #include <QListWidget>
 #include <QFileDialog>
 #include <QAudioOutput>
-#include <QMediaPlayer>
 #include <QPixmap>
 #include <QImage>
 #include <QScreen>
 #include <QMenu>
-#include <QTimer> // Add this include
-#include <QPen>   // Add this include
-#include <QColor>// Add this include
+#include <QTimer>
+#include <QPen>
+#include <QColor>
 #include <QMouseEvent>
 #include "new_playlist.h"
 #include "new_queue.h"
+#include "musicnetwork.h"   // اضافه برای شبکه
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -57,52 +58,44 @@ public:
     void set_username(QString un);
     void saveUserData(const QString& username);
     void loadUserData(const QString& username);
+    void sendCurrentPlaylist();
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override; // Override eventFilter
-
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
-
-    void on_moje_clicked(); // New slot for handling clicks on moje label
-
+    void on_moje_clicked();
     void onPositionChanged(qint64 position);
-
     void onDurationChanged(qint64 duration);
-
     void on_addMusic_clicked();
-
     void on_pushButton_4_clicked();
-
     void on_tableMusic_doubleClicked(const QModelIndex &index);
-
     void stopMusic();
-
     void pauseMusic();
-
     void on_valume_clicked();
-
     void showContextMenu(const QPoint &pos);
     void on_new_playlist_clicked();
     void creat_list(const QString &name);
     void on_pushButton_8_clicked();
-
     void on_pushButton_5_clicked();
-
     void on_pushButton_9_clicked();
-
     void play_list_play(QListWidgetItem* item);
     void on_pushButton_7_clicked();
-
     void on_pushButton_clicked();
-
     void creat_queue(const QString &name);
     void play_queue(QListWidgetItem *item);
-
-    void onMediaStatusChanged(QMediaPlayer::MediaStatus status); // Add this line
-
+    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void on_pushButton_6_clicked();
 
+    // --- بخش شبکه (MusicNetwork) ---
+    //void onHostRoomClicked();   // مثلاً متصل به دکمه "ایجاد اتاق"
+    //void onJoinRoomClicked();   // مثلاً متصل به دکمه "پیوستن به اتاق"
+    void handlePlayPauseFromNetwork(const QString& songTitle, const QString& action, qint64 pos);
 
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void sendNetworkPlaybackState();
 private:
     home(QWidget *parent = nullptr);
     static home* address;
@@ -123,17 +116,18 @@ private:
     void set_info();
     void updatePlayButtonIcon();
 
-
     QString username = "";
     QTimer *visualizerTimer = nullptr;
-    void updateVisualizer(); // New slot for drawing
-    // You might also want to store some visualizer parameters
-    int visualizerBarCount = 80;
+    void updateVisualizer();
+    int visualizerBarCount = 30;
     int visualizerMaxHeight = 185;
-    QColor currentVisualizerColor; // New member to store the current color
-    bool waveModel = false; // false for bars, true for sine wave (or another model)
+    QColor currentVisualizerColor;
+    bool waveModel = false;
 
-
-
+    // --- عضو شبکه ---
+    MusicNetwork* musicNetwork = nullptr;
+    bool isRemoteChange = false;
+    void updateNetworkStatus(const QString& status);
 };
-#endif // home_H
+
+#endif // HOME_H
