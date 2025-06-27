@@ -21,6 +21,7 @@ private:
     std::string hashPassword(QString& password);
 
     QString twoWayEncrypt(const QString &input);
+    bool isUsernameTaken(const QString &username);
 };
 
 #endif // SIGN_UP_H

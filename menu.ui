@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>588</height>
+    <width>958</width>
+    <height>586</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -399,7 +399,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>رمزعبور:</string>
+                <string>رمز عبور:</string>
                </property>
               </widget>
              </item>

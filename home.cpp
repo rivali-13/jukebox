@@ -75,9 +75,8 @@ home::home(QWidget *parent)
 
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
         this, [this]() {
-        QString currentUsername = "testUser";
         player->stop();
-        saveUserData(currentUsername);
+        saveUserData(username);
     });
 
     // **************  Picture Music  **********************
@@ -89,11 +88,6 @@ home::home(QWidget *parent)
 
     ui->tableMusic->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableMusic, &QTableWidget::customContextMenuRequested, this, &home::showContextMenu);
-
-
-    QString username = "testUser"; // مثال: از یک دیالوگ یا تنظیمات بخوانید
-    loadUserData(username);
-
 }
 
 
@@ -910,6 +904,11 @@ void home::updatePlayButtonIcon()
     }
 }
 
+void home::set_username(QString un)
+{
+    username = un;
+}
+
 // In home.cpp
 void home::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
@@ -1270,6 +1269,7 @@ void home::saveUserData(const QString& username)
     }
 
     QString fileName = appDataLocation + "/" + username + "_music_data.json";
+    qDebug() << "JSON file path:" << fileName;
     QFile saveFile(fileName);
     if (!saveFile.open(QIODevice::WriteOnly)) {
         qWarning("Couldn't open save file %s for writing: %s", qPrintable(fileName), qPrintable(saveFile.errorString()));

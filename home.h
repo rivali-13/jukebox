@@ -54,7 +54,7 @@ public:
 
     void add_to_playlist(int tabIndex, const QString& itemText);
     void add_to_queue(int tabIndex, const QString &itemText);
-
+    void set_username(QString un);
     void saveUserData(const QString& username);
     void loadUserData(const QString& username);
 protected:
@@ -124,10 +124,11 @@ private:
     void updatePlayButtonIcon();
 
 
+    QString username = "";
     QTimer *visualizerTimer = nullptr;
     void updateVisualizer(); // New slot for drawing
     // You might also want to store some visualizer parameters
-    int visualizerBarCount = 30;
+    int visualizerBarCount = 80;
     int visualizerMaxHeight = 185;
     QColor currentVisualizerColor; // New member to store the current color
     bool waveModel = false; // false for bars, true for sine wave (or another model)

@@ -39,6 +39,10 @@ void Sign_up::create_account()
         menu->ui->errUpEmail->setText("ایمیل نمیتواند خالی باشد");
         isOk = false;
     }
+    if (isUsernameTaken(menu->ui->upUsername->text())) {
+        menu->ui->errUpUser->setText("نام کاربری قبلاً استفاده شده است");
+        return;
+    }
     if (!isOk) return;
     // QMessageBox::critical(menu, "Error", "Invalid value");
 
@@ -85,3 +89,21 @@ std::string Sign_up::hashPassword(QString& password) {
     return std::to_string(hash);
 }
 
+bool Sign_up::isUsernameTaken(const QString& username) {
+    QFile file("users.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        // QMessageBox::critical(menu, "Error", "Could not open file for reading");
+        return false;
+    }
+
+    QTextStream in(&file);
+    QString encryptedUsername = twoWayEncrypt(username);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList parts = line.split(",");
+        if (parts.size() >= 1 && parts[0] == encryptedUsername) {
+            return true;
+        }
+    }
+    return false;
+}

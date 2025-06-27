@@ -38,7 +38,10 @@ void Panel_User::on_pushButton_clicked()
 
 void Panel_User::on_pushButton_3_clicked() //***
 {
-    home * pagemusic = home::single();
-    this->close();
+    home *pagemusic = home::single();
+    QString encryptedUsername = currentUser.get_user_name();
+    pagemusic->set_username(encryptedUsername);
+    pagemusic->loadUserData(encryptedUsername);
     pagemusic->show();
+    this->close();
 }
