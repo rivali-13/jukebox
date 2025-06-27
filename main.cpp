@@ -1,15 +1,15 @@
 #include "menu.h"
 #include <QApplication>
-#include "video.h"
-#include "home.h"
+// #include "video.h"
+// #include "home.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     Menu w;
-    //home* m = home::single();
+    // home* m = home::single();
 
-    //m->show();
+    // m->show();
     //Video v;
     //v.show();
 

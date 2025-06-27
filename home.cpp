@@ -1328,9 +1328,11 @@ void home::loadUserData(const QString& username)
         QString filePath = filePathValue.toString();
         QFileInfo fileInfo(filePath);
 
+        QString size = QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 2) + "MB";
+        if (size == "0.00MB") continue;
         QString fileName = fileInfo.completeBaseName();
         QString format = fileInfo.suffix().toUpper();
-        QString size = QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 2) + "MB";
+
         cur_row = ui->tableMusic->rowCount();
         ui->tableMusic->insertRow(cur_row);
         ui->tableMusic->setItem(cur_row, c_address, new QTableWidgetItem(filePath));
