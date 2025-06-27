@@ -79,6 +79,33 @@ home::home(QWidget *parent)
         saveUserData(username);
     });
 
+    connect(player, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState){
+        sendNetworkPlaybackState();
+    });
+
+    connect(ui->progressBar, &QSlider::sliderReleased, this, [this](){
+        if (!isRemoteChange && musicNetwork) {
+            QJsonObject msg;
+            msg["action"] = "seek";
+            msg["song_title"] = ui->title->text();
+            msg["position"] = player->position();
+            if (musicNetwork->isServer())
+                musicNetwork->broadcastToClients(msg);
+            else
+                musicNetwork->sendToServer(msg);
+        }
+    });
+
+    connect(musicNetwork, &MusicNetwork::clientConnected,
+            this, [this](const QString& addr) {
+                updateNetworkStatus("Client connected: " + addr);
+            });
+
+    connect(musicNetwork, &MusicNetwork::clientDisconnected,
+            this, [this](const QString& addr) {
+                updateNetworkStatus("Client disconnected: " + addr);
+            });
+
     // **************  Picture Music  **********************
     QPixmap pix(":/JukeBox/Icon/cover.png");
     ui->moje->setPixmap(pix);
@@ -1443,3 +1470,174 @@ void home::loadUserData(const QString& username)
     qDebug() << "User data loaded for:" << username;
     QMessageBox::information(this, "بارگذاری موفق", "اطلاعات کاربر با موفقیت بارگذاری شد!");
 }
+
+void home::handlePlayPauseFromNetwork(const QString &songTitle, const QString &action, qint64 pos)
+{
+    if (!musicNetwork) return;
+
+    isRemoteChange = true;
+
+    // پیدا کردن آهنگ در جدول
+    int foundRow = -1;
+    for (int row = 0; row < ui->tableMusic->rowCount(); ++row) {
+        if (ui->tableMusic->item(row, c_title) &&
+            ui->tableMusic->item(row, c_title)->text() == songTitle) {
+            foundRow = row;
+            break;
+        }
+    }
+
+    if (foundRow != -1) {
+        QString filePath = ui->tableMusic->item(foundRow, c_address)->text();
+
+        // اگر آهنگ عوض شده
+        if (player->source().toLocalFile() != filePath) {
+            player->setSource(QUrl::fromLocalFile(filePath));
+        }
+
+        // تنظیم موقعیت پخش
+        player->setPosition(pos);
+
+        // اجرای اکشن
+        if (action == "play") {
+            player->play();
+        } else if (action == "pause") {
+            player->pause();
+        } else if (action == "stop") {
+            player->stop();
+        }
+
+        set_info();
+        updatePlayButtonIcon();
+    }
+
+    isRemoteChange = false;
+}
+
+void home::on_pushButton_3_clicked()
+{
+    if (!musicNetwork) {
+        musicNetwork = new MusicNetwork(this);
+        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork,
+                this, &home::handlePlayPauseFromNetwork);
+    }
+    // فرض: localhost و پورت 12345 (یا هر آی‌پی مورد نظر)
+    musicNetwork->connectToServer("127.0.0.1", 12345);
+    // (اختیاری: پیام موفقیت یا نمایش دیالوگ)
+}
+
+void home::sendNetworkPlaybackState()
+{
+    if (!musicNetwork || isRemoteChange) return;
+
+    QJsonObject msg;
+    QMediaPlayer::PlaybackState state = player->playbackState();
+
+    if (state == QMediaPlayer::PlayingState)
+        msg["action"] = "play";
+    else if (state == QMediaPlayer::PausedState)
+        msg["action"] = "pause";
+    else if (state == QMediaPlayer::StoppedState)
+        msg["action"] = "stop";
+    else
+        return; // Unknown state
+
+    msg["song_title"] = ui->title->text();
+    msg["position"] = player->position();
+
+    // فرض: musicNetwork->isServer() متدی است که سرور بودن را تشخیص می‌دهد
+    if (musicNetwork->isServer())
+        musicNetwork->broadcastToClients(msg);
+    else
+        musicNetwork->sendToServer(msg);
+}
+
+void home::updateNetworkStatus(const QString& status)
+{
+
+    ui->status->setText(status);
+
+    // نمایش پیام به مدت 3 ثانیه
+    QTimer::singleShot(3000, this, [this]() {
+        if (musicNetwork && musicNetwork->isConnected()) {
+            if (musicNetwork->isServer()) {
+                ui->status->setText("Server: Running");
+            } else {
+                ui->status->setText("Client: Connected");
+            }
+        } else {
+            ui->status->setText("Not Connected");
+        }
+    });
+}
+
+// بهبود تابع‌های مربوط به دکمه‌های سرور و کلاینت
+void home::on_pushButton_2_clicked() // Server button
+{
+    if (!musicNetwork) {
+        musicNetwork = new MusicNetwork(this);
+
+        // اتصال سیگنال‌های شبکه
+        connect(musicNetwork, &MusicNetwork::clientConnected,
+                this, [this](const QString& addr) {
+                    updateNetworkStatus("Client connected: " + addr);
+                });
+
+        connect(musicNetwork, &MusicNetwork::clientDisconnected,
+                this, [this](const QString& addr) {
+                    updateNetworkStatus("Client disconnected: " + addr);
+                });
+
+        connect(musicNetwork, &MusicNetwork::networkError,
+                this, [this](const QString& error) {
+                    updateNetworkStatus("Error: " + error);
+                    QMessageBox::warning(this, "Network Error", error);
+                });
+
+        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork,
+                this, &home::handlePlayPauseFromNetwork);
+    }
+
+    // راه‌اندازی سرور
+    musicNetwork->startServer(12345);
+
+    // نمایش دیالوگ سرور
+    ServerDialog* dlg = new ServerDialog(this);
+    dlg->setStatus("Server running on port 12345");
+    dlg->setClients(musicNetwork->getConnectedClients());
+
+    // به‌روزرسانی خودکار لیست کلاینت‌ها
+    connect(musicNetwork, &MusicNetwork::clientConnected,
+            dlg, &ServerDialog::addClient);
+    connect(musicNetwork, &MusicNetwork::clientDisconnected,
+            dlg, &ServerDialog::removeClient);
+
+    connect(musicNetwork, &MusicNetwork::clientConnected,
+            this, &home::sendCurrentPlaylist);
+
+
+    dlg->exec();
+    dlg->deleteLater();
+}
+
+void home::sendCurrentPlaylist()
+{
+    if (!musicNetwork || !musicNetwork->isServer()) return;
+
+    QJsonObject msg;
+    msg["action"] = "playlist_sync";
+
+    QJsonArray songs;
+    for (int row = 0; row < ui->tableMusic->rowCount(); ++row) {
+        QJsonObject song;
+        song["title"] = ui->tableMusic->item(row, c_title)->text();
+        song["artist"] = ui->tableMusic->item(row, c_artist)->text();
+        song["path"] = ui->tableMusic->item(row, c_address)->text();
+        songs.append(song);
+    }
+
+    msg["songs"] = songs;
+    musicNetwork->broadcastToClients(msg);
+}
+
+// و این را به سیگنال clientConnected در on_pushButton_2_clicked اضافه کنید:

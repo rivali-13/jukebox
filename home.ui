@@ -473,11 +473,41 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <item>
+                 <widget class="QLabel" name="status">
+                  <property name="styleSheet">
+                   <string notr="true">color: white;</string>
+                  </property>
+                  <property name="text">
+                   <string>status</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_2">
+                  <property name="text">
+                   <string>server</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_3">
+                  <property name="text">
+                   <string>client</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QLabel" name="label_4">
                   <property name="minimumSize">
                    <size>
-                    <width>130</width>
+                    <width>70</width>
                     <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="text">
