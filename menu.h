@@ -53,5 +53,6 @@ private:
     void setInfoCover();
     Login* login;
     Sign_up* sign_up;
+    void cleanLabels();
 };
 #endif // MENU_H

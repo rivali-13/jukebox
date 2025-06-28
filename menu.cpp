@@ -60,6 +60,7 @@ void Menu::on_buttonCover_clicked()
         animation->setEndValue(endPos);
         isLoginMode = false;
         animation->start();
+        cleanLabels();
         setInfoCover();
     }
     else{
@@ -67,6 +68,7 @@ void Menu::on_buttonCover_clicked()
         animation->setEndValue(startPos);
         isLoginMode = true;
         animation->start();
+        cleanLabels();
         setInfoCover();
     }
 
@@ -90,6 +92,20 @@ void Menu::setInfoCover(){
         ui->infoCover->setText("اگر حساب کاربری دارید با استفاده از دکمه زیر وارد حساب کاربری خود شوید.");;
         ui->buttonCover->setText("ورود");
         ui->upUsername->setFocus();
+    }
+}
+
+void Menu::cleanLabels()
+{
+    if(!isLoginMode){
+        ui->upUsername->setText("");
+        ui->upName->setText("");
+        ui->upPassword->setText("");
+        ui->upEmail->setText("");
+    }
+    else{
+        ui->logUsername->setText("");
+        ui->logPassword->setText("");
     }
 }
 
