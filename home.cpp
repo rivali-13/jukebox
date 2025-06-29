@@ -1564,16 +1564,16 @@ void home::handlePlayPauseFromNetwork(const QString &songTitle, const QString &a
     isRemoteChange = false;
 }
 
-void home::on_pushButton_3_clicked()
-{
+void home::on_pushButton_3_clicked() {
+
+    if (ui->IP->text().isEmpty())
+        return;
     if (!musicNetwork) {
         musicNetwork = new MusicNetwork(this);
-        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork,
-                this, &home::handlePlayPauseFromNetwork);
+        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork, this, &home::handlePlayPauseFromNetwork);
     }
-    // فرض: localhost و پورت 12345 (یا هر آی‌پی مورد نظر)
-    musicNetwork->connectToServer("127.0.0.1", 12345);
-    // (اختیاری: پیام موفقیت یا نمایش دیالوگ)
+    musicNetwork->connectToServer(ui->IP->text(), 12345);  // IP سرور را وارد کنید
+    connect(musicNetwork, &MusicNetwork::playPauseFromNetwork, this, &home::handlePlayPauseFromNetwork);
 }
 
 void home::sendNetworkPlaybackState()
@@ -1622,52 +1622,13 @@ void home::updateNetworkStatus(const QString& status)
 }
 
 // بهبود تابع‌های مربوط به دکمه‌های سرور و کلاینت
-void home::on_pushButton_2_clicked() // Server button
-{
+void home::on_pushButton_2_clicked() {
     if (!musicNetwork) {
         musicNetwork = new MusicNetwork(this);
-
-        // اتصال سیگنال‌های شبکه
-        connect(musicNetwork, &MusicNetwork::clientConnected,
-                this, [this](const QString& addr) {
-                    updateNetworkStatus("Client connected: " + addr);
-                });
-
-        connect(musicNetwork, &MusicNetwork::clientDisconnected,
-                this, [this](const QString& addr) {
-                    updateNetworkStatus("Client disconnected: " + addr);
-                });
-
-        connect(musicNetwork, &MusicNetwork::networkError,
-                this, [this](const QString& error) {
-                    updateNetworkStatus("Error: " + error);
-                    QMessageBox::warning(this, "Network Error", error);
-                });
-
-        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork,
-                this, &home::handlePlayPauseFromNetwork);
+        connect(musicNetwork, &MusicNetwork::playPauseFromNetwork, this, &home::handlePlayPauseFromNetwork);
     }
-
-    // راه‌اندازی سرور
-    musicNetwork->startServer(12345);
-
-    // نمایش دیالوگ سرور
-    ServerDialog* dlg = new ServerDialog(this);
-    dlg->setStatus("Server running on port 12345");
-    dlg->setClients(musicNetwork->getConnectedClients());
-
-    // به‌روزرسانی خودکار لیست کلاینت‌ها
-    connect(musicNetwork, &MusicNetwork::clientConnected,
-            dlg, &ServerDialog::addClient);
-    connect(musicNetwork, &MusicNetwork::clientDisconnected,
-            dlg, &ServerDialog::removeClient);
-
-    connect(musicNetwork, &MusicNetwork::clientConnected,
-            this, &home::sendCurrentPlaylist);
-
-
-    dlg->exec();
-    dlg->deleteLater();
+    musicNetwork->startServer(12345);  // شروع سرور
+    connect(musicNetwork, &MusicNetwork::playPauseFromNetwork, this, &home::handlePlayPauseFromNetwork);
 }
 
 void home::sendCurrentPlaylist()

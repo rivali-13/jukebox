@@ -213,6 +213,9 @@
                  </spacer>
                 </item>
                 <item>
+                 <widget class="QLineEdit" name="IP"/>
+                </item>
+                <item>
                  <widget class="QLabel" name="cover">
                   <property name="minimumSize">
                    <size>
