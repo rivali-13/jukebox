@@ -297,7 +297,10 @@ void home::on_tableMusic_doubleClicked(const QModelIndex &index)
     } else {
         playMusic(filePath); // Play new song
     }
-
+    QImage img = extractCoverArtFromMp3(filePath);
+    qDebug() << "Image is nullptr" << img;
+    QPixmap pix = QPixmap::fromImage(img);
+    ui->cover->setPixmap(pix);
     set_info();
 }
 void home::stopMusic()
@@ -1071,12 +1074,17 @@ void home::on_pushButton_6_clicked()
 void home::updateVisualizer()
 {
     QSize labelSize = ui->moje->size();
-    if (labelSize.isEmpty()) {
+    if (labelSize.isEmpty()) return;
+
+    // حالت نمایش کاور آهنگ
+    if (status == cover) {
+        QPixmap pix(":/JukeBox/Icon/cover.png");
+        ui->moje->setPixmap(pix);
         return;
     }
 
     QPixmap pixmap(labelSize);
-    pixmap.fill(Qt::black); // Fill background with black
+    pixmap.fill(Qt::black); // پس‌زمینه مشکی
 
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
@@ -1088,105 +1096,140 @@ void home::updateVisualizer()
     int barWidth = labelSize.width() / visualizerBarCount;
     if (barWidth == 0) barWidth = 1;
 
+    // ویژوالایزر پویا هنگام پخش موسیقی
     if (player->playbackState() == QMediaPlayer::PlayingState) {
-        if (waveModel == false) { // Model 1: Vertical bars (existing)
+        switch (status) {
+        case v1: // میله‌های ساده
             for (int i = 0; i < visualizerBarCount; ++i) {
                 int barHeight = rand() % visualizerMaxHeight + 1;
                 int x = i * barWidth + (barWidth / 2);
                 painter.drawLine(x, labelSize.height(), x, labelSize.height() - barHeight);
             }
-        } else { // Model 2: Waveform similar to the provided image (Simplified approach)
-            QVector<QPoint> points;
+            break;
+
+        case v2: {
+            QVector<QPoint> topWave;
+            QVector<QPoint> bottomWave;
             int centerY = labelSize.height() / 2;
-            double maxAmplitude = visualizerMaxHeight / 2.0; // Max deviation from center
+            int numPoints = labelSize.width();
+            QVector<double> noise(numPoints);
 
-            // تعداد "پیک" یا نقاطی که می خواهیم در عرض ویژوالایزر داشته باشیم
-            int numPeaks = visualizerBarCount * 2; // مثلا 2 برابر تعداد میله ها
-
-            for (int i = 0; i < numPeaks; ++i) {
-                double x_pos = (double)i / (numPeaks - 1) * labelSize.width();
-
-                // Generate a "peak" height for this segment
-                // A random value for the peak, simulating audio variations
-                double peakHeightRatio = (rand() % 100) / 100.0; // 0.0 to 1.0
-                double currentAmplitude = maxAmplitude * (0.3 + peakHeightRatio * 0.7); // Varies from 30% to 100% of max
-
-                // Use an inverted V-shape or triangle for each peak/segment
-                // This creates the spiky look from the image.
-                // We'll draw two points per segment: one for the positive peak, one for the negative.
-
-                // Top part of the wave
-                int y_top = (int)(centerY - currentAmplitude);
-                points.append(QPoint(x_pos, y_top));
-
-                // Bottom part of the wave (symmetrical to top)
-                int y_bottom = (int)(centerY + currentAmplitude);
-                points.append(QPoint(x_pos, y_bottom));
+            // 1. تولید مقدار تصادفی اولیه (شبه نویز)
+            for (int i = 0; i < numPoints; ++i) {
+                noise[i] = (rand() % 100) / 100.0;
             }
 
-            // Draw the polyline, connecting all calculated points.
-            // Note: This simple approach draws vertical lines between top and bottom points for each peak.
-            // If you want a continuous line that goes up and down,
-            // you'd need to connect (x_i, y_top_i) to (x_i+1, y_bottom_i) and then to (x_i+1, y_top_i+1)
-            // For now, let's connect the top points and bottom points separately to create two lines.
+            // 2. صاف‌سازی (moving average)
+            QVector<double> smoothNoise(numPoints);
+            for (int i = 1; i < numPoints - 1; ++i) {
+                smoothNoise[i] = (noise[i - 1] + noise[i] + noise[i + 1]) / 3.0;
+            }
+            smoothNoise[0] = (noise[0] + noise[1]) / 2.0;
+            smoothNoise[numPoints - 1] = (noise[numPoints - 2] + noise[numPoints - 1]) / 2.0;
 
-            // To get a single continuous wave like the image, a slightly different approach:
+            // 3. تبدیل به نقاط گرافیکی
+            for (int i = 0; i < numPoints; ++i) {
+                double x = (double)i;
+                double amplitude = visualizerMaxHeight * 0.4 * smoothNoise[i]; // مقیاس‌دهی دامنه
+                int yTop = centerY - amplitude;
+                int yBottom = centerY + amplitude;
+
+                topWave.append(QPoint(x, yTop));
+                bottomWave.append(QPoint(x, yBottom));
+            }
+
+            // 4. رسم
+            if (topWave.size() > 1)
+                painter.drawPolyline(topWave.data(), topWave.size());
+            if (bottomWave.size() > 1)
+                painter.drawPolyline(bottomWave.data(), bottomWave.size());
+
+            break;
+        }
+
+        case v3: {
             QVector<QPoint> topWavePoints;
             QVector<QPoint> bottomWavePoints;
+            int centerY = labelSize.height() / 2;
+            double maxAmplitude = visualizerMaxHeight / 2.0;
+            int numPeaks = visualizerBarCount * 2;
 
             for (int i = 0; i < numPeaks; ++i) {
                 double x_pos = (double)i / (numPeaks - 1) * labelSize.width();
-                double peakHeightRatio = (rand() % 100) / 100.0;
-                double currentAmplitude = maxAmplitude * (0.3 + peakHeightRatio * 0.7);
-
-                int y_top = (int)(centerY - currentAmplitude);
-                int y_bottom = (int)(centerY + currentAmplitude);
+                double peakRatio = (rand() % 100) / 100.0;
+                double amplitude = maxAmplitude * (0.3 + peakRatio * 0.7);
+                int y_top = centerY - amplitude;
+                int y_bottom = centerY + amplitude;
 
                 topWavePoints.append(QPoint(x_pos, y_top));
                 bottomWavePoints.append(QPoint(x_pos, y_bottom));
             }
 
-            // Draw the top wave
-            if (topWavePoints.size() > 1) {
+            if (topWavePoints.size() > 1)
                 painter.drawPolyline(topWavePoints.data(), topWavePoints.size());
-            }
-
-            // Draw the bottom wave (mirror of top wave)
-            if (bottomWavePoints.size() > 1) {
+            if (bottomWavePoints.size() > 1)
                 painter.drawPolyline(bottomWavePoints.data(), bottomWavePoints.size());
-            }
+            break;
         }
-    } else { // If not playing, display fixed state for the *current* waveModel
+
+        default:
+            break;
+        }
+    }
+
+    // حالت ایستا وقتی موزیک پخش نمی‌شود
+    else {
         int fixedHeight = visualizerMaxHeight / 3;
-        if (waveModel == false) { // Fixed bars
+        switch (status) {
+        case v1: // میله ثابت
             for (int i = 0; i < visualizerBarCount; ++i) {
                 int x = i * barWidth + (barWidth / 2);
                 painter.drawLine(x, labelSize.height(), x, labelSize.height() - fixedHeight);
             }
-        } else { // Fixed Waveform (simpler, less dynamic when stopped, similar to image in resting state)
+            break;
+
+        case v2: {
+            int centerY = labelSize.height() / 2;
+            int barSpacing = 3; // فاصله بین میله‌ها
+            int barWidth = 2;
+            int numBars = labelSize.width() / (barWidth + barSpacing);
+
+            for (int i = 0; i < numBars; ++i) {
+                int x = i * (barWidth + barSpacing);
+                int barHeight = rand() % (visualizerMaxHeight / 2) + 10; // ارتفاع متغیر
+
+                int yTop = centerY - barHeight;
+                int yBottom = centerY + barHeight;
+
+                painter.drawLine(x, yTop, x, yBottom); // از بالا به پایین
+            }
+            break;
+        }
+        case v3: {
             QVector<QPoint> topWavePoints;
             QVector<QPoint> bottomWavePoints;
             int centerY = labelSize.height() / 2;
-            double fixedAmplitude = visualizerMaxHeight / 2.0 * 0.2; // Smaller amplitude when stopped
-            int numPoints = labelSize.width(); // Use more points for a smooth line
+            double amplitude = visualizerMaxHeight / 2.0 * 0.2;
+            int numPoints = labelSize.width();
 
             for (int i = 0; i < numPoints; ++i) {
                 double x_pos = (double)i / (numPoints - 1) * labelSize.width();
-                double value = qSin(x_pos * 0.05); // A simple sine wave for the fixed state
-
-                int y_top = (int)(centerY - value * fixedAmplitude);
-                int y_bottom = (int)(centerY + value * fixedAmplitude);
-
+                double value = qSin(x_pos * 0.05);
+                int y_top = centerY - value * amplitude;
+                int y_bottom = centerY + value * amplitude;
                 topWavePoints.append(QPoint(x_pos, y_top));
                 bottomWavePoints.append(QPoint(x_pos, y_bottom));
             }
 
-            if (topWavePoints.size() > 1) {
+            if (topWavePoints.size() > 1)
                 painter.drawPolyline(topWavePoints.data(), topWavePoints.size());
-            }
-            if (bottomWavePoints.size() > 1) {
+            if (bottomWavePoints.size() > 1)
                 painter.drawPolyline(bottomWavePoints.data(), bottomWavePoints.size());
-            }
+            break;
+        }
+
+        default:
+            break;
         }
     }
 
@@ -1195,9 +1238,14 @@ void home::updateVisualizer()
 
 void home::on_moje_clicked()
 {
-    waveModel = !waveModel;
+    if (status == v3)
+        status = cover;
+    else
+        status = static_cast<pic>(status + 1);
+
     updateVisualizer();
 }
+
 
 
 bool home::eventFilter(QObject *obj, QEvent *event)
@@ -1643,3 +1691,66 @@ void home::sendCurrentPlaylist()
 }
 
 // و این را به سیگنال clientConnected در on_pushButton_2_clicked اضافه کنید:
+QImage home::extractCoverArtFromMp3(const QString &filePath)
+{
+    if (!QFile::exists(filePath)) {
+        qWarning() << "File does not exist:" << filePath;
+        return QImage();
+    }
+
+    TagLib::FileRef fileRef(filePath.toUtf8().constData());
+
+    if (fileRef.isNull()) {
+        qWarning() << "TagLib::FileRef is null for file:" << filePath;
+        return QImage();
+    }
+
+    if (!fileRef.file()->isValid()) {
+        qWarning() << "TagLib::File content is not valid for file:" << filePath;
+        return QImage();
+    }
+
+    TagLib::MPEG::File *mpegFile = dynamic_cast<TagLib::MPEG::File*>(fileRef.file());
+    if (!mpegFile) {
+        qWarning() << "File is not an MPEG file or dynamic_cast failed:" << filePath;
+        return QImage();
+    }
+
+    TagLib::ID3v2::Tag *id3v2tag = mpegFile->ID3v2Tag();
+    if (!id3v2tag) {
+        qWarning() << "No ID3v2 tag found in file:" << filePath;
+        return QImage();
+    }
+
+    TagLib::ID3v2::FrameList frames = id3v2tag->frameList("APIC");
+
+    if (frames.isEmpty()) {
+        qWarning() << "No APIC frames found in file:" << filePath;
+        return QImage();
+    }
+
+    qDebug() << "Found" << frames.size() << "APIC frame(s) in:" << filePath;
+
+    for (TagLib::ID3v2::Frame *frame : frames) {
+        TagLib::ID3v2::AttachedPictureFrame *pictureFrame =
+            dynamic_cast<TagLib::ID3v2::AttachedPictureFrame *>(frame);
+
+        if (pictureFrame) {
+            qDebug() << "Picture MIME type:" << QString::fromStdString(pictureFrame->mimeType().toCString());
+            qDebug() << "Picture type:" << pictureFrame->type();
+
+            const TagLib::ByteVector &imageData = pictureFrame->picture();
+
+            QImage coverImage;
+            if (coverImage.loadFromData(reinterpret_cast<const uchar*>(imageData.data()), imageData.size())) {
+                qDebug() << "Successfully loaded image from MP3:" << filePath;
+                return coverImage;
+            } else {
+                qWarning() << "Failed to load image data from picture frame.";
+            }
+        }
+    }
+
+    qDebug() << "No suitable cover art extracted from file:" << filePath;
+    return QImage();
+}

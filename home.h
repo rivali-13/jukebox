@@ -32,10 +32,23 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 
+#include <taglib/fileref.h>
+#include <taglib/tag.h>
+#include <taglib/mpeg/mpegfile.h> // برای دسترسی به TagLib::MPEG::File
+#include <taglib/mpeg/id3v2/id3v2tag.h> // برای دسترسی به TagLib::ID3v2::Tag
+#include <taglib/mpeg/id3v2/frames/attachedpictureframe.h> // برای دسترسی به AttachedPictureFrame
+#include <taglib/toolkit/tbytevector.h> // برای TagLib::ByteVector
+
 enum state{
     disable = 1,
     once,
     list
+};
+enum pic{
+    cover = 1,
+    v1,
+    v2,
+    v3
 };
 
 QT_BEGIN_NAMESPACE
@@ -122,12 +135,14 @@ private:
     int visualizerBarCount = 30;
     int visualizerMaxHeight = 185;
     QColor currentVisualizerColor;
+    pic status = cover;
     bool waveModel = false;
 
     // --- عضو شبکه ---
     MusicNetwork* musicNetwork = nullptr;
     bool isRemoteChange = false;
     void updateNetworkStatus(const QString& status);
+    QImage extractCoverArtFromMp3(const QString &filePath);
 };
 
 #endif // HOME_H

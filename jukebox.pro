@@ -1,6 +1,18 @@
 QT += core gui widgets multimedia
-
+INCLUDEPATH += C:/taggg/taglib
+INCLUDEPATH += C:/taggg/taglib/toolkit
+INCLUDEPATH += C:/taggg/taglib/mpeg
+INCLUDEPATH += C:/taggg/taglib/mpeg/id3v2
+LIBS += -LC:\taggg\taglib\build\taglib\Release -ltag
 CONFIG += c++17
+
+QMAKE_CXXFLAGS += -MD
+QMAKE_LFLAGS += -MD
+
+# برای Debug (اینها باید کامنت شده باشند اگر در Release بیلد می کنید)
+# QMAKE_CXXFLAGS += -MDd
+# QMAKE_LFLAGS += -MDd
+
 
 SOURCES += \
     forget.cpp \
